@@ -9,6 +9,7 @@ import { ListActionRow } from "../../components/ui/ListActionRow";
 import { ListSection } from "../../components/ui/ListSection";
 import { collectMobileAssistantTextSelectors } from "../../lib/assistantCitationSelection";
 import { Button } from "../../components/ui/Button";
+import { ReadAloudButton } from "./ReadAloudButton";
 import * as Dialog from "../../components/ui/Dialog";
 import { ASSISTANT_CITATION_MAX_TEXT_LENGTH, type AssistantCitation } from "@t3tools/contracts";
 import { useOpenPullRequest } from "../../native/useOpenPullRequest";
@@ -2730,6 +2731,13 @@ function renderFeedEntry(
               {timestampLabel}
             </Text>
           </View>
+        ) : null}
+        {showAssistantMeta && !message.streaming && renderedText ? (
+          <ReadAloudButton
+            environmentId={props.environmentId}
+            messageId={message.id}
+            text={renderedText}
+          />
         ) : null}
       </Animated.View>
     );
