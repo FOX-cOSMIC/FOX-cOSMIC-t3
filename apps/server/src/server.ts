@@ -97,6 +97,7 @@ import * as ServerSettings from "./serverSettings.ts";
 import * as ManagedLimits from "./policy/managedLimits.ts";
 import * as ManagedPolicy from "./policy/ManagedPolicy.ts";
 import * as Dictation from "./dictation/Dictation.ts";
+import * as ReadAloud from "./speech/ReadAloud.ts";
 import * as DictationArtifacts from "./dictation/DictationArtifacts.ts";
 import * as DictationRecognizer from "./dictation/DictationRecognizer.ts";
 import * as ProjectEnrichmentService from "./project/ProjectEnrichmentService.ts";
@@ -680,6 +681,7 @@ const layerRuntimeCoreDependenciesBase = Layer.mergeAll(
   Layer.provideMerge(SecretResolver.layer),
   Layer.provideMerge(layerServerSettings),
   Layer.provideMerge(layerDictation),
+  Layer.provideMerge(ReadAloud.layer.pipe(Layer.provide(ProcessRunner.layer))),
   Layer.provideMerge(layerSourceControlProviderRegistry),
   Layer.provideMerge(layerGit),
   Layer.provideMerge(layerVcs),
