@@ -34,6 +34,7 @@ import {
   ChatGptHandoffState,
 } from "./providerSetup.ts";
 import * as Schema from "effect/Schema";
+import { ReadAloudInput, ReadAloudAudio, ReadAloudError } from "./readAloud.ts";
 import * as Rpc from "effect/rpc/Rpc";
 import * as RpcGroup from "effect/rpc/RpcGroup";
 import * as RpcMiddleware from "effect/rpc/RpcMiddleware";
@@ -508,6 +509,7 @@ export const WS_METHODS = {
 
   // Dictation methods
   dictationInstall: "dictation.install",
+  readAloudGenerate: "readAloud.generate",
   dictationRemove: "dictation.remove",
   dictationStart: "dictation.start",
   dictationWarm: "dictation.warm",
@@ -1735,6 +1737,12 @@ const WsSubscribeDeviceStateRpc = Rpc.make(WS_METHODS.subscribeDeviceState, {
 
 const DictationRpcError = Schema.Union([DictationError, EnvironmentAuthorizationError]);
 
+const WsReadAloudGenerateRpc = Rpc.make(WS_METHODS.readAloudGenerate, {
+  payload: ReadAloudInput,
+  success: ReadAloudAudio,
+  error: Schema.Union([ReadAloudError, EnvironmentAuthorizationError]),
+});
+
 const WsDictationInstallRpc = Rpc.make(WS_METHODS.dictationInstall, {
   payload: DictationInstallInput,
   error: DictationRpcError,
@@ -2235,6 +2243,7 @@ export const WsRpcGroup = RpcGroup.make(
   WsDeviceActionRpc,
   WsSubscribeDeviceStateRpc,
   WsDictationInstallRpc,
+  WsReadAloudGenerateRpc,
   WsDictationRemoveRpc,
   WsDictationStartRpc,
   WsDictationWarmRpc,
