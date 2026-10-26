@@ -1,6 +1,7 @@
 import { toServerClock } from "@t3tools/client-runtime/clock";
 import { formatDuration } from "@t3tools/shared/orchestrationTiming";
 import { Button } from "../../components/ui/Button";
+import { ReadAloudButton } from "./ReadAloudButton";
 import * as Dialog from "../../components/ui/Dialog";
 import { useOpenPullRequest } from "../../native/useOpenPullRequest";
 import { useWorkspaceSettledContentWidth } from "../layout/workspace-content-width";
@@ -2557,6 +2558,13 @@ function renderFeedEntry(
               {timestampLabel}
             </Text>
           </View>
+        ) : null}
+        {showAssistantMeta && !message.streaming && renderedText ? (
+          <ReadAloudButton
+            environmentId={props.environmentId}
+            messageId={message.id}
+            text={renderedText}
+          />
         ) : null}
       </Animated.View>
     );
