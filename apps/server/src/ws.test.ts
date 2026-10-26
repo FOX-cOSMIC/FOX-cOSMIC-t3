@@ -39,6 +39,7 @@ import * as AssetSigner from "./assets/AssetSigner.ts";
 import * as PreviewAutomationBroker from "./mcp/PreviewAutomationBroker.ts";
 import * as ServerBrowser from "./preview/ServerBrowser.ts";
 import * as Dictation from "./dictation/Dictation.ts";
+import * as ReadAloud from "./speech/ReadAloud.ts";
 import * as AcpRegistryRuntimeCoordinator from "@t3tools/provider-acp-registry/server/AcpRegistryRuntimeCoordinator";
 import * as AcpRegistrySupport from "@t3tools/provider-acp-registry/server/AcpRegistrySupport";
 import * as AgentSessionImporter from "./project/AgentSessionImporter.ts";
@@ -1003,6 +1004,7 @@ it.effect.each([
           Layer.mock(PreviewAutomationBroker.PreviewAutomationBroker)({}),
           Layer.mock(ServerBrowser.ServerBrowser)({}),
           Layer.mock(Dictation.Dictation)({}),
+          Layer.mock(ReadAloud.ReadAloud)({}),
         ),
       ),
       Effect.scoped,
@@ -1164,6 +1166,7 @@ it.effect("on-demand clients get provider config without workspace snapshots", (
         Layer.mock(PreviewAutomationBroker.PreviewAutomationBroker)({}),
         Layer.mock(ServerBrowser.ServerBrowser)({}),
         Layer.mock(Dictation.Dictation)({}),
+        Layer.mock(ReadAloud.ReadAloud)({}),
       ),
     ),
     Effect.scoped,
