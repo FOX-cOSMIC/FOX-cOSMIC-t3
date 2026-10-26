@@ -92,6 +92,7 @@ export const CLIENT_GUARDED_RPC_SCOPES = {
   [WS_METHODS.peerLinksAnswerRequest]: AuthAccessWriteScope,
   [WS_METHODS.peerLinksPairClient]: AuthAccessWriteScope,
   [WS_METHODS.peerLinksPairLink]: AuthAccessWriteScope,
+  [WS_METHODS.readAloudGenerate]: AuthOrchestrationOperateScope,
 } as const;
 export type ClientGuardedRpcTag = keyof typeof CLIENT_GUARDED_RPC_SCOPES;
 
