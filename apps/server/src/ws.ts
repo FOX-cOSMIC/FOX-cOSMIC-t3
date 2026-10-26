@@ -185,6 +185,7 @@ import * as ServerSettings from "./serverSettings.ts";
 import * as Dictation from "./dictation/Dictation.ts";
 import { invalidateSettingsSecrets } from "./sourceControl/sourceControlHostSecrets.ts";
 import * as DatabaseStorage from "./persistence/DatabaseStorage.ts";
+import * as ReadAloud from "./speech/ReadAloud.ts";
 import * as StorageCleanup from "./storageCleanup.ts";
 import * as TerminalManager from "./terminal/Manager.ts";
 import { terminalOutputStream, withTerminalOutputWindow } from "./terminal/OutputProtocol.ts";
@@ -1421,6 +1422,7 @@ export const layerWsRpc = (
       const secretResolver = yield* SecretResolver.SecretResolver;
       const peerLinks = yield* PeerLinks.PeerLinks;
       const peerLinkRequests = yield* PeerLinkRequests.PeerLinkRequests;
+      const readAloud = yield* ReadAloud.ReadAloud;
       const startup = yield* ServerRuntimeStartup.ServerRuntimeStartup;
       const workspaceEntries = yield* WorkspaceEntries.WorkspaceEntries;
       const workspaceFileSystem = yield* WorkspaceFileSystem.WorkspaceFileSystem;
@@ -3137,6 +3139,7 @@ export const layerWsRpc = (
         [WS_METHODS.deviceDetail]: (input) => deviceService.detail(input),
         [WS_METHODS.deviceAction]: (input) => deviceService.action(input),
         [WS_METHODS.dictationInstall]: (input) => dictation.install(input),
+        [WS_METHODS.readAloudGenerate]: (input) => readAloud.generate(input),
         [WS_METHODS.dictationRemove]: (input) => dictation.remove(input),
         [WS_METHODS.dictationStart]: () => dictation.start,
         [WS_METHODS.dictationWarm]: () => dictation.warm,
