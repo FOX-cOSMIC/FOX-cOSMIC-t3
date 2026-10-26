@@ -196,6 +196,7 @@ import * as SecretResolver from "@t3tools/secret-provider-core/server/SecretReso
 import * as ServerSettings from "./serverSettings.ts";
 import { invalidateSettingsSecrets } from "./sourceControl/sourceControlHostSecrets.ts";
 import * as DatabaseStorage from "./persistence/DatabaseStorage.ts";
+import * as ReadAloud from "./speech/ReadAloud.ts";
 import * as StorageCleanup from "./storageCleanup.ts";
 import * as TerminalManager from "./terminal/Manager.ts";
 import { makePrepareTerminalLaunch } from "./workspace/restoreMissingWorktree.ts";
@@ -1568,6 +1569,7 @@ export const layerWsRpc = (
       const peerLinkRequests = yield* PeerLinkRequests.PeerLinkRequests;
       const peerThreadRelay = yield* PeerThreadRelay.PeerThreadRelay;
       const peerClientPairing = yield* PeerClientPairing.PeerClientPairing;
+      const readAloud = yield* ReadAloud.ReadAloud;
       const startup = yield* ServerRuntimeStartup.ServerRuntimeStartup;
       const workspaceEntries = yield* WorkspaceEntries.WorkspaceEntries;
       const workspaceFolders = yield* WorkspaceFolders.WorkspaceFolders;
@@ -3392,6 +3394,7 @@ export const layerWsRpc = (
         [WS_METHODS.deviceShutdown]: (input) => deviceService.shutdown(input),
         [WS_METHODS.deviceDetail]: (input) => deviceService.detail(input),
         [WS_METHODS.deviceAction]: (input) => deviceService.action(input),
+        [WS_METHODS.readAloudGenerate]: (input) => readAloud.generate(input),
         [WS_METHODS.subscribeDeviceState]: (_input) => DeviceService.stateStream(deviceService),
         [WS_METHODS.previewStopLocalServer]: (input) => portDiscovery.stopServer(input),
         [WS_METHODS.subscribeDiscoveredLocalServers]: (input) =>

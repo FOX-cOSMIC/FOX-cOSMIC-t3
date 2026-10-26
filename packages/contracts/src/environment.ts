@@ -85,6 +85,7 @@ export type ServerSelfUpdateCapability = typeof ServerSelfUpdateCapability.Type;
 
 export const ExecutionEnvironmentCapabilities = Schema.Struct({
   repositoryIdentity: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
+  readAloud: Schema.optionalKey(Schema.Boolean),
   connectionProbe: Schema.optionalKey(Schema.Boolean),
   /** A DPoP session from a pairing link renews at /oauth/token; pair with a bearer where absent. */
   accessTokenRenewal: Schema.optionalKey(Schema.Boolean),
