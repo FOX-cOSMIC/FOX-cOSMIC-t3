@@ -53,7 +53,6 @@ import {
   dedupeWithinFile,
   LEGACY_SCAN_CACHE_FILE_NAMES,
   makeScanCacheWriter,
-  pruneScanCache,
   SCAN_CACHE_FILE_NAME,
   type CachedFile,
   type ScanCache,
@@ -72,7 +71,8 @@ const RATES_REFRESH_FLOOR_MS = 60 * 1000;
 const MTIME_SLACK_MS = 36 * 60 * 60 * 1000;
 const MAX_HOURLY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-const CACHE_RETENTION_DAYS = 92;
+// Saved usage has no age limit: transcripts get deleted, and Cursor fetches its history once.
+const RETENTION_CUTOFF_MS = 0;
 const STALE_TEMP_DIRECTORY_MS = 60 * 60 * 1000;
 
 const TRANSCRIPT_READ_CONCURRENCY = 4;
@@ -360,7 +360,6 @@ export const make = Effect.gen(function* () {
 
   const resolveTranscriptDirs = Effect.fn("UsageService.resolveTranscriptDirs")(function* (
     settings: ServerSettingsValue,
-    retentionCutoffMs: number,
     awaitRefresh: boolean,
   ) {
     const dirs: Array<TranscriptSource> = [];
@@ -391,7 +390,6 @@ export const make = Effect.gen(function* () {
           .some(
             ([filePath, entry]) =>
               entry.provider === provider &&
-              entry.mtimeMs >= retentionCutoffMs &&
               (entry.records.length + entry.tailRecords.length > 0 || entry.malformedRecords > 0) &&
               isWithinDirectory(filePath, dir),
           );
@@ -750,7 +748,6 @@ export const make = Effect.gen(function* () {
     { dirs, pending }: Effect.Success<ReturnType<typeof resolveTranscriptDirs>>,
     windowStartMs: number,
     settings: ServerSettingsValue,
-    retentionCutoffMs: number,
     awaitRefresh: boolean,
     fromMemory: boolean,
   ) {
@@ -759,7 +756,13 @@ export const make = Effect.gen(function* () {
       ({ driver, reader }) =>
         usageInstances(driver, settings).pipe(
           Effect.flatMap((instances) =>
-            reader.scan({ instances, settings, windowStartMs, retentionCutoffMs, awaitRefresh }),
+            reader.scan({
+              instances,
+              settings,
+              windowStartMs,
+              retentionCutoffMs: RETENTION_CUTOFF_MS,
+              awaitRefresh,
+            }),
           ),
           Effect.flatMap((sources) =>
             Effect.forEach(sources, ({ volumeId, ...source }) =>
@@ -844,11 +847,9 @@ export const make = Effect.gen(function* () {
     const windowStartMs =
       (hourlyWindow?.sinceTimeMs ?? DateTime.toEpochMillis(windowStart.value)) - MTIME_SLACK_MS;
 
-    const retentionCutoffMs = startedAtMs - CACHE_RETENTION_DAYS * 24 * 60 * 60 * 1000;
-
     const awaitRefresh = input.awaitRefresh === true;
     const collect = Effect.gen(function* () {
-      const resolved = yield* resolveTranscriptDirs(settings, retentionCutoffMs, awaitRefresh).pipe(
+      const resolved = yield* resolveTranscriptDirs(settings, awaitRefresh).pipe(
         Effect.provideContext(readerContext),
       );
       // A window no complete scan has read would show partial totals, so every directory must cover it.
@@ -863,14 +864,7 @@ export const make = Effect.gen(function* () {
       const [, scanned] = yield* Effect.all(
         [
           fromMemory ? loadSavedRates : provisional ? ensureRates(false) : Effect.void,
-          collectDirs(
-            resolved,
-            windowStartMs,
-            settings,
-            retentionCutoffMs,
-            awaitRefresh,
-            fromMemory,
-          ),
+          collectDirs(resolved, windowStartMs, settings, awaitRefresh, fromMemory),
         ],
         { concurrency: 2 },
       );
@@ -896,7 +890,6 @@ export const make = Effect.gen(function* () {
     const sources: UsageSource[] = [];
 
     // Deleted transcripts' saved usage still aggregates and deduplicates normally.
-    const retainedSinceMs = Math.max(windowStartMs, retentionCutoffMs);
     // Saved paths are files below a scanned root, so their folder decides; folders repeat thousands of times.
     const withinDir = (dir: string) => {
       const foldersWithin = new Map<string, boolean>();
@@ -917,7 +910,7 @@ export const make = Effect.gen(function* () {
       for (const [filePath, entry] of fileCache) {
         if (
           entry.provider !== provider ||
-          entry.mtimeMs < retainedSinceMs ||
+          entry.mtimeMs < windowStartMs ||
           livePaths.has(filePath) ||
           !isRetained(filePath)
         )
@@ -1093,15 +1086,6 @@ export const make = Effect.gen(function* () {
           ? { refreshing: true }
           : {}),
       });
-    }
-
-    const pruned = pruneScanCache(fileCache, retentionCutoffMs);
-    if (pruned > 0) {
-      cacheDirty = true;
-      // Pruned files are no longer saved, so nothing before the cutoff stays covered.
-      for (const [key, since] of coveredSince) {
-        if (since < retentionCutoffMs) coveredSince.set(key, retentionCutoffMs);
-      }
     }
 
     const aggregated = aggregator.finish();
