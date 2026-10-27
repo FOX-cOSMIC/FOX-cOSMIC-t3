@@ -88,7 +88,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("ServerEnvironmen
           Effect.provide(layerServerEnvironment(baseDir)),
           Effect.provideService(HostProcess.Platform, platform),
         );
-        expect(supported).toBe(platform === "win32");
+        expect(supported).toBe(platform === "win32" || platform === "darwin");
       }),
   );
   it.effect("publishes proven install ownership only for manually updated servers", () =>
