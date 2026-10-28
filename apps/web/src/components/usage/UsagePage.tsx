@@ -52,6 +52,7 @@ import {
   formatTokens,
   formatUsd,
   makeWindow,
+  usageSinceDay,
 } from "@t3tools/shared/usageFormat";
 import { formatUsageContractMismatch, usageSourceMessages } from "@t3tools/shared/usageFormatCopy";
 import { Button, InlineButton } from "../ui/button";
@@ -94,6 +95,7 @@ import {
   WINDOW_OPTIONS,
   resolveUsageShortcut,
   type UsageMetric,
+  windowOptionForValue,
 } from "./usageShortcuts";
 import {
   PROVIDER_ORDER,
@@ -109,10 +111,6 @@ import {
 
 function isUsageMetric(value: string | null | undefined): value is UsageMetric {
   return METRIC_OPTIONS.some((option) => option.value === value);
-}
-
-function isUsageWindowDays(value: number): value is UsagePagePreferences["windowDays"] {
-  return WINDOW_OPTIONS.some((option) => option.days === value);
 }
 
 const providerLabel = (provider: UsageProviderKind) => PROVIDER_PRESENTATION[provider].label;
@@ -240,13 +238,16 @@ export function UsagePage() {
     setPreferences(nextPreferences);
     saveUsagePagePreferences(nextPreferences);
   };
-  const selectWindow = (days: number) => {
-    if (!isUsageWindowDays(days)) return;
+  const selectWindow = (days: UsagePagePreferences["windowDays"]) => {
     updatePreferences({ windowDays: days });
     setWindowSelection({
       days,
       window: makeWindow(days, undefined, days === 1 ? "hour" : "day"),
     });
+  };
+  const selectWindowValue = (value: string | null | undefined) => {
+    const option = windowOptionForValue(value);
+    if (option) selectWindow(option.days);
   };
   const selectMetric = (nextMetric: UsageMetric) => {
     if (nextMetric === "limits") setLimitsNow(Date.now());
@@ -344,7 +345,8 @@ export function UsagePage() {
     if (showingLimits && connectedLimitsEnvironments) autoRefreshLimits();
   }, [showingLimits, connectedLimitsEnvironments]);
 
-  const days = enumerateDays(shownWindow.sinceDay, shownWindow.untilDay);
+  const sinceDay = usageSinceDay(shownWindow, merged.daily);
+  const days = enumerateDays(sinceDay, shownWindow.untilDay);
   const hours =
     shownWindow.sinceTime === undefined || shownWindow.untilTime === undefined
       ? []
@@ -364,7 +366,7 @@ export function UsagePage() {
           end: formatDateTimeShort(shownWindow.untilTime, shownWindow.timeZone, hour12, locale),
         })
       : gt("{start} to {end}", {
-          start: formatDayShort(shownWindow.sinceDay, locale),
+          start: formatDayShort(sinceDay, locale),
           end: formatDayShort(shownWindow.untilDay, locale),
         });
   const windowOptionLabel = WINDOW_OPTIONS.find((option) => option.days === windowDays)?.label;
@@ -413,10 +415,7 @@ export function UsagePage() {
             aria-label={gt("Usage period")}
             variant="segmented"
             value={[String(windowDays)]}
-            onValueChange={(next) => {
-              const value = next[0];
-              if (value) selectWindow(Number(value));
-            }}
+            onValueChange={(next) => selectWindowValue(next[0])}
           >
             {WINDOW_OPTIONS.map((option) => (
               <Toggle key={option.days} value={String(option.days)} title={shortcutTitle(option)}>
@@ -453,7 +452,7 @@ export function UsagePage() {
       </div>
       <div className="ms-auto flex shrink-0 items-center justify-end gap-1 @4xl/usage-header:hidden">
         {showingLimits ? null : (
-          <Select value={String(windowDays)} onValueChange={(value) => selectWindow(Number(value))}>
+          <Select value={String(windowDays)} onValueChange={selectWindowValue}>
             <SelectTrigger
               aria-label={gt("Usage period")}
               size="compact"
