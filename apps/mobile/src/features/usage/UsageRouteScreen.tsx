@@ -1,7 +1,12 @@
 import { AppActivityIndicator } from "../../components/ui/AppActivityIndicator";
 import { ChatGptUsageSummary } from "./ChatGptUsageSummary";
 import { ScreenScrollView as ScrollView } from "../../components/ui/ScreenScrollView";
-import { EnvironmentId, USAGE_CONTRACT_VERSION, type UsageProviderKind } from "@t3tools/contracts";
+import {
+  EnvironmentId,
+  USAGE_CONTRACT_VERSION,
+  type UsageProviderKind,
+  type UsageSummaryInput,
+} from "@t3tools/contracts";
 import { type RouteProp, useIsFocused, useRoute } from "@react-navigation/native";
 import {
   updatingProvidersLabel,
@@ -22,6 +27,7 @@ import {
   formatTokens,
   formatUsd,
   makeWindow,
+  usageSinceDay,
 } from "@t3tools/shared/usageFormat";
 import { formatUsageContractMismatch, usageSourceMessages } from "@t3tools/shared/usageFormatCopy";
 import { msg, T, useGT, useLocale, useMessages, Var } from "gt-react-native";
@@ -77,7 +83,13 @@ const WINDOW_OPTIONS = [
     label: msg("90d", { $context: "short label for the past 90 days" }),
     accessibilityLabel: msg("Past 90 days"),
   },
+  {
+    value: "all",
+    label: msg("All", { $context: "short label for every saved day" }),
+    accessibilityLabel: msg("All time"),
+  },
 ] as const;
+type WindowDays = (typeof WINDOW_OPTIONS)[number]["value"];
 
 const CHART_HEIGHT = 180;
 const WIDE_CHART_HEIGHT = 260;
@@ -121,7 +133,10 @@ function UsageScreen(props: {
   // A workspace pane knows its width in the render that resizes it; measuring lags a frame.
   const width = useWorkspaceSettledContentWidth() ?? measuredWidth;
   const wide = width >= WIDE_WIDTH;
-  const [windowSelection, setWindowSelection] = useState(() => ({
+  const [windowSelection, setWindowSelection] = useState<{
+    readonly days: WindowDays;
+    readonly window: UsageSummaryInput;
+  }>(() => ({
     days: 30,
     window: makeWindow(30),
   }));
@@ -147,7 +162,8 @@ function UsageScreen(props: {
     (environment) => environment.canReadDiagnostics,
   );
 
-  const days = enumerateDays(window.sinceDay, window.untilDay);
+  const sinceDay = usageSinceDay(window, merged.daily);
+  const days = enumerateDays(sinceDay, window.untilDay);
   const chartDays =
     isPast24Hours && window.sinceTime !== undefined && window.untilTime !== undefined
       ? enumerateHourStarts(window.sinceTime, window.untilTime)
@@ -173,7 +189,7 @@ function UsageScreen(props: {
     },
     m,
   );
-  const selectWindow = (days: number) => {
+  const selectWindow = (days: WindowDays) => {
     setWindowSelection({
       days,
       window: makeWindow(days, undefined, days === 1 ? "hour" : "day"),
@@ -203,7 +219,7 @@ function UsageScreen(props: {
     days: chartDays,
     daily: chartTotals,
     metric,
-    sinceDay: window.sinceDay,
+    sinceDay,
     untilDay: window.untilDay,
     isPast24Hours,
     timeZone: window.timeZone,
