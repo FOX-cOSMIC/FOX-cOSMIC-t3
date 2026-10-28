@@ -23,9 +23,10 @@ the totals for Codex or Claude Code 2.0.63 and newer, because those runs save no
 The server keeps scanned usage history for good by default (`"unlimited"`). Claude Code deletes its own
 transcripts after 30 days, so for older Claude usage this history is the only record left. To limit
 it, set `usageHistoryRetentionDays` in `<T3 home>/userdata/settings.json` to a number of days
-such as `365`, or to `"unlimited"`. Usage views still show at most 90 days. Lowering the value
-prunes older history on the next refresh, and raising it again does not bring pruned history back.
+such as `365`, or to `"unlimited"`. Lowering the value prunes older history on the next refresh, and raising it again does not bring pruned history back.
 While `settings.json` cannot be read, nothing is pruned.
+
+**All time** charts every saved day, from the earliest day with usage to today.
 
 OpenCode reads its SQLite database and older JSON history. Antigravity reads local conversation
 databases, including T3-managed profiles. Set `OPENCODE_DATA_DIR` or `ANTIGRAVITY_DATA_DIR` on the
@@ -243,6 +244,7 @@ Session, Weekly, or both for each provider. Reopen T3 to refresh expired reading
 On web and desktop, open Usage from the command palette. While on Usage,
 press `C`, `T`, or `L` for Cost, Tokens, or Limits while not typing in a field.
 Use `Ctrl+Shift+1/2/3/4` (`Cmd+Shift+1/2/3/4` on macOS) for the past
-24 hours, 7 days, 30 days, or 90 days. Period shortcuts do nothing on Limits.
+24 hours, 7 days, 30 days, or 90 days, and `Ctrl+Shift+0` (`Cmd+Shift+0` on macOS) for
+All time. Period shortcuts do nothing on Limits.
 Press `Escape` to return to the previous page. Customize these shortcuts in
 **Settings → Keybindings**.
