@@ -68,6 +68,7 @@ import * as DesktopTelemetryPublisher from "./telemetry/DesktopTelemetryPublishe
 import * as DesktopRendererHistory from "./telemetry/DesktopRendererHistory.ts";
 import * as DesktopUpdatePolicy from "./updates/DesktopUpdatePolicy.ts";
 import * as DesktopUpdates from "./updates/DesktopUpdates.ts";
+import * as UserDataBackup from "./updates/userDataBackup.ts";
 import * as BrowserImport from "./preview/BrowserImport/BrowserImport.ts";
 import * as LinuxBrowserSecret from "./preview/BrowserImport/LinuxBrowserSecret.ts";
 import * as BrowserSession from "./preview/BrowserSession.ts";
@@ -219,6 +220,7 @@ const layerDesktopApplication = Layer.mergeAll(
       Layer.provide(DesktopUpdatePolicy.layer),
       // The same layer as the foundation's, so the policy is still read once.
       Layer.provide(DesktopManagedPolicy.layer),
+      Layer.provide(UserDataBackup.layer),
     ),
   ),
   Layer.provideMerge(layerDesktopWslBackend),
