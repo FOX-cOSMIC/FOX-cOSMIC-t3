@@ -31,12 +31,19 @@ export function getDesktopUpdateDownloadedVersion(state: DesktopUpdateState): st
   return state.downloadedVersion ?? state.availableVersion;
 }
 
+// A voice build (<version>-voice.<date>.<n>) has no release tagged v<version>: the Windows release
+// is tagged voice-<version>, and the Mac build is one rolling release. Both link to the release list.
+const VOICE_BUILD_VERSION = /-voice\./;
+
 export function getDesktopUpdateReleaseUrl(
   version: string | null,
   repository: string | undefined = import.meta.env.T3CODE_DESKTOP_UPDATE_REPOSITORY,
 ): string | null {
   const normalizedVersion = version?.trim();
   if (!normalizedVersion) return null;
+  if (VOICE_BUILD_VERSION.test(normalizedVersion)) {
+    return getDesktopUpdateReleaseHistoryUrl(repository);
+  }
   return `${desktopReleaseRepositoryUrl(repository)}/tag/v${encodeURIComponent(normalizedVersion)}`;
 }
 
@@ -178,11 +185,12 @@ export function getDesktopUpdateButtonTooltip(
 }
 
 export function getDesktopUpdateInstallConfirmationMessage(
-  state: Pick<DesktopUpdateState, "availableVersion" | "downloadedVersion">,
+  state: Pick<DesktopUpdateState, "availableVersion" | "downloadedVersion"> &
+    Partial<Pick<DesktopUpdateState, "releaseNotes">>,
   resolve: MessageResolver = m,
 ): string {
   const version = state.downloadedVersion ?? state.availableVersion;
-  return version
+  const question = version
     ? resolve(
         msg(
           "Install update {version} and restart T3 Code?\n\nAny running tasks will be interrupted. Make sure you're ready before continuing.",
@@ -194,6 +202,15 @@ export function getDesktopUpdateInstallConfirmationMessage(
           "Install update and restart T3 Code?\n\nAny running tasks will be interrupted. Make sure you're ready before continuing.",
         ),
       );
+  const highlights = version
+    ? state.releaseNotes?.find((note) => note.version === version)?.intro
+    : undefined;
+  if (!highlights) return question;
+  // The release highlights go between the question and the warning.
+  const split = question.indexOf("\n\n");
+  return split === -1
+    ? `${question}\n\n${highlights}`
+    : `${question.slice(0, split)}\n\n${highlights}${question.slice(split)}`;
 }
 
 export function getDesktopUpdateActionError(result: DesktopUpdateActionResult): string | null {
