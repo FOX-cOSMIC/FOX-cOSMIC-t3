@@ -43,6 +43,7 @@ import {
   normalizeDesktopUpdateReleaseNotes,
   releaseNotesOfOfferedVersion,
 } from "./releaseNotes.ts";
+import * as UserDataBackup from "./userDataBackup.ts";
 import { desktopUpdateChannelOf } from "@t3tools/shared/cliRelease";
 import { compareSemverVersions } from "@t3tools/shared/semver";
 import {
@@ -379,6 +380,7 @@ export const make = Effect.gen(function* () {
   const sshEnvironment = yield* DesktopSshEnvironment.DesktopSshEnvironment;
   const desktopState = yield* DesktopState.DesktopState;
   const electronUpdater = yield* ElectronUpdater.ElectronUpdater;
+  const userDataBackup = yield* UserDataBackup.UserDataBackup;
   const electronWindow = yield* ElectronWindow.ElectronWindow;
   const environment = yield* DesktopEnvironment.DesktopEnvironment;
   const fileSystem = yield* FileSystem.FileSystem;
@@ -927,6 +929,9 @@ export const make = Effect.gen(function* () {
             ],
             { concurrency: "unbounded" },
           );
+          // The copy runs with the backends stopped (their databases are closed) and before the
+          // installer starts. A failed copy cancels the install through recoverFailedInstall.
+          yield* userDataBackup.backupBeforeInstall(downloadedVersion ?? "unknown");
           yield* electronUpdater.quitAndInstall({
             isSilent: true,
             isForceRunAfter: true,
@@ -934,6 +939,16 @@ export const make = Effect.gen(function* () {
           return { accepted: true, completed: false, failed: false };
         }).pipe(
           Effect.catchTags({
+            UserDataBackupError: Effect.fn("desktop.updates.handleBackupFailure")(
+              function* (error) {
+                yield* recoverFailedInstall(error.message);
+                yield* logUpdaterError(error.message, {
+                  errorTag: error._tag,
+                  cause: describeUpdateErrorCause(error.cause),
+                });
+                return { accepted: true, completed: false, failed: true };
+              },
+            ),
             ElectronUpdaterQuitAndInstallError: Effect.fn("desktop.updates.handleInstallFailure")(
               function* (error) {
                 yield* recoverFailedInstall(error.message);
