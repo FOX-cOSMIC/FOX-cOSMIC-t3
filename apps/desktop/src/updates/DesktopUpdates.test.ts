@@ -24,6 +24,7 @@ import * as DesktopEnvironment from "../app/DesktopEnvironment.ts";
 import * as DesktopState from "../app/DesktopState.ts";
 import * as DesktopUpdatePolicy from "./DesktopUpdatePolicy.ts";
 import * as DesktopUpdates from "./DesktopUpdates.ts";
+import { UserDataBackupError } from "./userDataBackup.ts";
 import { flushCallbacks, makeHarness } from "./updatesTestHarness.ts";
 
 const encodeUpdateState = Schema.encodeEffect(DesktopUpdateStateSchema);
@@ -862,6 +863,7 @@ describe("DesktopUpdates", () => {
         assert.isFalse(yield* Ref.get(desktopState.quitting));
         assert.deepEqual(harness.installSteps, [
           "closeSshTunnels",
+          "backup",
           "quitAndInstall",
           "startBackend",
         ]);
@@ -895,7 +897,7 @@ describe("DesktopUpdates", () => {
 
         const result = yield* updates.install;
         assert.equal(result.state.errorContext, "install");
-        assert.deepEqual(harness.installSteps, ["closeSshTunnels", "quitAndInstall"]);
+        assert.deepEqual(harness.installSteps, ["closeSshTunnels", "backup", "quitAndInstall"]);
         assert.isFalse((yield* (yield* pool.primary).snapshot).desiredRunning);
       }),
     ).pipe(Effect.provide(Layer.merge(TestClock.layer(), harness.layer)));
@@ -991,6 +993,7 @@ describe("DesktopUpdates", () => {
         yield* flushCallbacks;
         assert.deepEqual(harness.installSteps, [
           "closeSshTunnels",
+          "backup",
           "quitAndInstall",
           "startBackend",
         ]);
@@ -1002,6 +1005,47 @@ describe("DesktopUpdates", () => {
         const retry = yield* updates.install;
         assert.isTrue(retry.accepted);
         assert.equal(harness.quitAndInstalls(), 2);
+      }),
+    ).pipe(Effect.provide(Layer.merge(TestClock.layer(), harness.layer)));
+  });
+
+  it.effect("copies the data before the installer starts", () => {
+    const harness = makeHarness();
+
+    return Effect.scoped(
+      Effect.gen(function* () {
+        const updates = yield* DesktopUpdates.DesktopUpdates;
+        yield* updates.configure;
+        harness.emit("update-downloaded", { version: "1.2.4" });
+        yield* flushCallbacks;
+
+        const result = yield* updates.install;
+        assert.isTrue(result.accepted);
+        assert.deepEqual(harness.installSteps, ["closeSshTunnels", "backup", "quitAndInstall"]);
+      }),
+    ).pipe(Effect.provide(Layer.merge(TestClock.layer(), harness.layer)));
+  });
+
+  it.effect("cancels the install and restarts the backends when the copy fails", () => {
+    const harness = makeHarness({
+      backupBeforeInstall: Effect.fail(new UserDataBackupError({ cause: new Error("disk full") })),
+    });
+
+    return Effect.scoped(
+      Effect.gen(function* () {
+        const updates = yield* DesktopUpdates.DesktopUpdates;
+        yield* updates.configure;
+        harness.emit("update-downloaded", { version: "1.2.4" });
+        yield* flushCallbacks;
+
+        const result = yield* updates.install;
+        assert.equal(harness.quitAndInstalls(), 0);
+        assert.deepEqual(harness.installSteps, ["closeSshTunnels", "backup", "startBackend"]);
+        assert.equal(result.state.errorContext, "install");
+        assert.equal(
+          result.state.message,
+          "Could not copy your data before installing, so the install was cancelled.",
+        );
       }),
     ).pipe(Effect.provide(Layer.merge(TestClock.layer(), harness.layer)));
   });
