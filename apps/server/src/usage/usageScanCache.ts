@@ -241,7 +241,8 @@ export function decodeScanCache(
         !Number.isFinite(timestampMs) ||
         model === undefined ||
         (unresolvedServiceTierTurnId != null && typeof unresolvedServiceTierTurnId !== "string") ||
-        !Number.isFinite(cacheCreation1h) ||
+        !Number.isSafeInteger(cacheCreation1h) ||
+        cacheCreation1h < 0 ||
         typeof modelCalls !== "number" ||
         !Number.isFinite(modelCalls) ||
         modelCalls < 0 ||
