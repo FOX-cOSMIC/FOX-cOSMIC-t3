@@ -229,7 +229,8 @@ export function decodeScanCache(
         !Number.isFinite(timestampMs) ||
         model === undefined ||
         (unresolvedServiceTierTurnId != null && typeof unresolvedServiceTierTurnId !== "string") ||
-        !Number.isFinite(cacheCreation1h) ||
+        !Number.isSafeInteger(cacheCreation1h) ||
+        cacheCreation1h < 0 ||
         (rateModelIndex != null && rateModel === undefined) ||
         !Number.isFinite(uncached) ||
         !Number.isFinite(cached) ||

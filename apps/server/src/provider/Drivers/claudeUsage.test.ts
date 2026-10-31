@@ -289,8 +289,13 @@ describe("Claude one-hour cache writes", () => {
 
   it("leaves the one-hour share unset when the transcript has no split", () => {
     const [record] = parse({ cache_creation_input_tokens: 100 });
+    const [zero] = parse({
+      cache_creation_input_tokens: 100,
+      cache_creation: { ephemeral_5m_input_tokens: 100, ephemeral_1h_input_tokens: 0 },
+    });
 
     expect(record?.cacheCreation1hTokens).toBeUndefined();
+    expect(zero?.cacheCreation1hTokens).toBeUndefined();
   });
 
   it("reports an advisor call's one-hour share on the advisor's own record", () => {
