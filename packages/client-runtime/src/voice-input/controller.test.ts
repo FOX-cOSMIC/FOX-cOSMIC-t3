@@ -6,7 +6,6 @@ import {
   VoiceInputController,
   voiceInputBlocksSubmission,
   VOICE_RECORDING_LIMIT_SECONDS,
-  voiceInputBlocksSubmission,
   type VoiceDraftSnapshot,
   type VoiceInputControllerDependencies,
   type VoiceRecorder,
