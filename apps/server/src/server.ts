@@ -98,6 +98,9 @@ import { hasCloudPublicConfig } from "./cloud/publicConfig.ts";
 import * as ServerSettings from "./serverSettings.ts";
 import * as ManagedLimits from "./policy/managedLimits.ts";
 import * as ManagedPolicy from "./policy/ManagedPolicy.ts";
+import * as Dictation from "./dictation/Dictation.ts";
+import * as DictationArtifacts from "./dictation/DictationArtifacts.ts";
+import * as DictationRecognizer from "./dictation/DictationRecognizer.ts";
 import * as ProjectEnrichmentService from "./project/ProjectEnrichmentService.ts";
 import * as NativeAppIconResolver from "./assets/NativeAppIconResolver.ts";
 import * as AntigravityInstallation from "./provider/AntigravityInstallation.ts";
@@ -375,6 +378,13 @@ const layerHttpServer = Layer.unwrap(
 
 const layerPlatformServices = DocumentText.layer.pipe(
   Layer.provideMerge(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer)),
+);
+
+const layerDictationArtifacts = DictationArtifacts.layer;
+const layerDictation = Dictation.layer.pipe(
+  Layer.provide(DictationRecognizer.layer.pipe(Layer.provide(layerDictationArtifacts))),
+  Layer.provide(layerDictationArtifacts),
+  Layer.provide(layerServerSettings),
 );
 
 const layerPersistence = Layer.empty.pipe(Layer.provideMerge(SqlitePersistence.layerConfig));
@@ -673,6 +683,7 @@ const layerRuntimeCoreDependenciesBase = Layer.mergeAll(
   Layer.provideMerge(Layer.merge(ProjectStore.layer, ThreadSearch.layer)),
   Layer.provideMerge(SecretResolver.layer),
   Layer.provideMerge(layerServerSettings),
+  Layer.provideMerge(layerDictation),
   Layer.provideMerge(layerSourceControlProviderRegistry),
   Layer.provideMerge(layerGit),
   Layer.provideMerge(layerVcs),
