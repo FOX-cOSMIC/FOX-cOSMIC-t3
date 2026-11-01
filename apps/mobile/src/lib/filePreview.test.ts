@@ -68,6 +68,7 @@ vi.mock("expo-audio", () => ({
   setAudioModeAsync: audio.setAudioMode,
   setIsAudioActiveAsync: audio.setActive,
 }));
+vi.mock("../features/threads/ReadAloudButton", () => ({ ReadAloudButton: () => null }));
 vi.mock("@react-navigation/native", () => ({
   useIsFocused: () => true,
   useNavigation: () => ({ navigate: audio.navigate }),
