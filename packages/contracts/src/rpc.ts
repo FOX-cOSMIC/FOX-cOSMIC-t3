@@ -509,13 +509,15 @@ export const WS_METHODS = {
 
   // Dictation methods
   dictationInstall: "dictation.install",
-  readAloudGenerate: "readAloud.generate",
   dictationRemove: "dictation.remove",
   dictationStart: "dictation.start",
   dictationWarm: "dictation.warm",
   dictationAppend: "dictation.append",
   dictationFinish: "dictation.finish",
   dictationCancel: "dictation.cancel",
+
+  // Read aloud methods
+  readAloudGenerate: "readAloud.generate",
 
   // Server meta
   serverProbe: "server.probe",
