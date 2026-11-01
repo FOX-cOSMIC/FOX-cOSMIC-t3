@@ -499,7 +499,7 @@ export const WS_METHODS = {
   deviceDetail: "device.detail",
   deviceAction: "device.action",
 
-  // Read aloud
+  // Read aloud methods
   readAloudGenerate: "readAloud.generate",
 
   serverProbe: "server.probe",
