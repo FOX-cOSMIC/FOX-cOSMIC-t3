@@ -3202,7 +3202,10 @@ describe("UsageService", () => {
       const { transcript, settings, home } = yield* setup;
       const lastWrite = "2026-01-15T10:00:00Z";
       yield* Effect.promise(async () => {
-        await NodeFSP.writeFile(transcript, claudeLine(1, 5, "claude-fable-5", "session-1", lastWrite));
+        await NodeFSP.writeFile(
+          transcript,
+          claudeLine(1, 5, "claude-fable-5", "session-1", lastWrite),
+        );
         const seconds = Date.parse(lastWrite) / 1000;
         await NodeFSP.utimes(transcript, seconds, seconds);
       });
