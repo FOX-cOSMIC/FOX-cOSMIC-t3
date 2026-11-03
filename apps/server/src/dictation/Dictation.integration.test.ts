@@ -1,3 +1,4 @@
+import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
 import { DictationModelId } from "@t3tools/contracts";
@@ -61,6 +62,7 @@ it.live.skipIf(!fixture)("installs and transcribes through the real native runti
         ServerSettings.layerTest({ dictation: { engine: "local", localModel: model } }),
       ),
       Layer.provide(ServerConfig.layerTest(process.cwd(), home ?? { prefix: "t3-dictation-e2e-" })),
+      Layer.provide(NodeCrypto.layer),
     );
     yield* Effect.gen(function* () {
       const service = yield* Dictation.Dictation;
