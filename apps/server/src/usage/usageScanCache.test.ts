@@ -218,8 +218,9 @@ describe("scan cache round trip", () => {
       };
 
       const restored = decodeScanCache(JSON.parse(JSON.stringify(legacy)), TEST_FORMAT_MAP);
+      // v11 added the one-hour cache-write split: older Claude entries keep records, not positions.
       expect(restored.get("/gone.jsonl")).toEqual(
-        version >= 10
+        version >= 11
           ? original.get("/gone.jsonl")
           : {
               ...original.get("/gone.jsonl"),
