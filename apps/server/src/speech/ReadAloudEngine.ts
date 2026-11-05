@@ -56,6 +56,7 @@ const make = Effect.gen(function* () {
   const runner = yield* ProcessRunner.ProcessRunner;
   const artifacts = yield* DictationArtifacts.DictationArtifacts;
   const platform = yield* HostProcess.Platform;
+  const hostEnvironment = yield* HostProcess.Environment;
   const scope = yield* Effect.scope;
   const root = path.join(config.stateDir, "read-aloud", "voices-v1");
   const kokoroDirectory = path.join(root, kokoroArchive.directory);
@@ -129,7 +130,7 @@ const make = Effect.gen(function* () {
         // The Windows system tar is bsdtar; a GNU tar earlier on PATH (Git for Windows) is far slower with .bz2.
         command:
           platform === "win32"
-            ? path.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe")
+            ? path.join(hostEnvironment.SystemRoot ?? "C:\\Windows", "System32", "tar.exe")
             : "tar",
         args: ["-xjf", kokoroArchive.name],
         cwd: temporary,
