@@ -33,8 +33,9 @@ export class DictationArtifacts extends Context.Service<
       },
       DictationError
     >;
+    /** Installs the native runtime, then `model`. A null model installs only the runtime. */
     readonly install: (
-      model: DictationModelId,
+      model: DictationModelId | null,
       progress: (
         artifact: "runtime" | DictationModelId,
         state: DictationInstallState,
@@ -62,7 +63,7 @@ const make = Effect.gen(function* () {
         (cause) =>
           new DictationError({
             reason: "install-failed",
-            message: "Could not access dictation files.",
+            message: "Could not access the speech runtime files.",
             cause,
           }),
       ),
@@ -197,7 +198,7 @@ const make = Effect.gen(function* () {
       if (!runtime)
         return yield* new DictationError({
           reason: "unsupported-platform",
-          message: "Local dictation is unavailable on this platform.",
+          message: "The local speech runtime is unavailable on this platform.",
         });
       let lastProgress = -Infinity;
       const report: typeof progress = Effect.fn("DictationArtifacts.reportProgress")(
@@ -212,7 +213,8 @@ const make = Effect.gen(function* () {
       const current = yield* inspect;
       if (current.runtime._tag !== "installed") {
         yield* progress("runtime", { _tag: "installing", receivedBytes: 0, totalBytes: 0 });
-        yield* atomicInstall(paths(model).runtime, (temporary) =>
+        // The runtime path does not depend on the model.
+        yield* atomicInstall(paths("parakeet-v3").runtime, (temporary) =>
           Effect.gen(function* () {
             const archive = path.join(temporary, "runtime.tgz");
             yield* download(
@@ -233,7 +235,7 @@ const make = Effect.gen(function* () {
               catch: (cause) =>
                 new DictationError({
                   reason: "install-failed",
-                  message: "The dictation runtime archive was invalid.",
+                  message: "The speech runtime archive was invalid.",
                   cause,
                 }),
             });
@@ -242,7 +244,7 @@ const make = Effect.gen(function* () {
               catch: (cause) =>
                 new DictationError({
                   reason: "install-failed",
-                  message: "The dictation runtime archive was invalid.",
+                  message: "The speech runtime archive was invalid.",
                   cause,
                 }),
             });
@@ -253,7 +255,7 @@ const make = Effect.gen(function* () {
             )
               return yield* new DictationError({
                 reason: "install-failed",
-                message: "The dictation runtime addon was missing.",
+                message: "The speech runtime addon was missing.",
               });
             for (const file of files) {
               const target = path.join(temporary, file.path);
@@ -265,6 +267,7 @@ const make = Effect.gen(function* () {
         );
         yield* progress("runtime", (yield* inspect).runtime);
       } else yield* progress("runtime", current.runtime);
+      if (model === null) return;
       const existingModel = current.models.get(model);
       if (existingModel?._tag === "installed") {
         yield* progress(model, existingModel);
