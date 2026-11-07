@@ -45,7 +45,7 @@ const decodePiperConfig = Schema.decodeUnknownEffect(
 );
 
 /**
- * sherpa-onnx text-to-speech on the native runtime that dictation already installs.
+ * sherpa-onnx text-to-speech on the native runtime. Read aloud installs that runtime on first use.
  * Voices (about 430 MB) download in the background the first time read aloud is used.
  */
 const make = Effect.gen(function* () {
@@ -114,6 +114,10 @@ const make = Effect.gen(function* () {
   }, Effect.scoped);
 
   const install = Effect.gen(function* () {
+    // Installs the runtime when it is missing, and does nothing when it is present.
+    yield* artifacts
+      .install(null, () => Effect.void)
+      .pipe(Effect.mapError((error) => failure("voice-unavailable", error.message)));
     if (yield* installed) return;
     const temporary = `${root}.tmp`;
     yield* io(fs.makeDirectory(path.dirname(root), { recursive: true }));
@@ -202,6 +206,11 @@ const make = Effect.gen(function* () {
     );
   });
 
+  const runtimeInstalled = artifacts.inspect.pipe(
+    Effect.map((state) => state.runtime._tag === "installed"),
+    Effect.orElseSucceed(() => false),
+  );
+
   const loadAddon = Effect.fnUntraced(function* () {
     if (addon) return addon;
     const state = yield* artifacts.inspect.pipe(
@@ -210,7 +219,7 @@ const make = Effect.gen(function* () {
     if (state.runtime._tag !== "installed")
       return yield* failure(
         "voice-unavailable",
-        "Turn on dictation once in Settings so the local speech runtime is installed, then try again.",
+        "The local speech runtime is not installed yet. Try again in a few minutes.",
       );
     const runtimePath = path.join(artifacts.paths("parakeet-v3").runtime, "sherpa-onnx.node");
     addon = yield* Effect.try({
@@ -261,13 +270,13 @@ const make = Effect.gen(function* () {
     voice: ReadAloudVoiceId,
     text: string,
   ) {
-    if (!(yield* installed)) {
+    if (!(yield* installed) || !(yield* runtimeInstalled)) {
       yield* startInstall;
       return yield* failure(
         "voice-unavailable",
         installFailed !== null
           ? `${installFailed} Try again to restart the download.`
-          : `Downloading the read-aloud voices (${Math.min(99, Math.round((downloaded / totalDownloadBytes) * 100))}%). This happens once; try again in a few minutes.`,
+          : `Downloading the read-aloud voices and speech runtime (${Math.min(99, Math.round((downloaded / totalDownloadBytes) * 100))}%). This happens once; try again in a few minutes.`,
       );
     }
     const native = yield* loadAddon();
