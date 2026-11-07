@@ -11,10 +11,10 @@ used. The audio plays only on the device where you pressed the button, including
 connected to that environment. The Windows PC or Mac must be on and connected. Linux speech
 generation is not supported in this version.
 
-The first time you use it, the environment downloads the voices (about 430 MB, checked
-against pinned hashes) and shows the progress as a message; press **Read aloud** again once it
-finishes. Read aloud uses the same local speech runtime as dictation, so turn dictation on once
-if the message asks for it. Voices are stored under `read-aloud` in the server state folder.
+The first time you use it, the environment downloads the speech runtime and the voices. The
+voices are about 430 MB and checked against pinned hashes. The progress shows as a message;
+press **Read aloud** again once it finishes. Voices are stored under `read-aloud` in the server
+state folder.
 
 Code blocks, images, tables and raw HTML are skipped. Up to 4,000 characters of spoken text
 are supported per reply; longer replies show an error instead of silently omitting the end.
