@@ -1,6 +1,6 @@
 name: Voice build (Windows)
 
-# Lucas's own build: upstream main + dictation PR #19273. The Mac's nightly
+# Lucas's own build: upstream main plus our read aloud and usage changes. The Mac's nightly
 # update.sh pushes `voice` here after its typecheck passes; this builds the
 # unsigned Windows installer and publishes it as the latest release, which the
 # installed app's updater follows (app-update.yml points at this repository).
@@ -93,7 +93,7 @@ jobs:
             mv "$notes.new" "$notes"
             echo "Using the change summary for $GITHUB_SHA"
           else
-            printf '**v%s**\n\nUpstream main %s plus dictation PR #19273.\n' \
+            printf '**v%s**\n\nUpstream main %s plus read aloud and usage changes.\n' \
               "$VERSION" "$(git rev-parse --short HEAD)" > "$notes"
             echo "No change summary for $GITHUB_SHA on voice-mac; using the fallback"
           fi
@@ -122,6 +122,6 @@ jobs:
           gh release create "voice-$VERSION" "${assets[@]}" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "T3 Code $VERSION (with dictation)" \
+            --title "T3 Code $VERSION" \
             --notes-file release-notes.md \
             --latest
