@@ -1243,7 +1243,9 @@ it.effect("on-demand clients get provider config without workspace snapshots", (
           yield* ServerBrowser.ServerBrowser,
           () => Effect.void,
           { secretReferences: true },
-        ).pipe(Layer.provide(configRpcServices)),
+        ).pipe(
+          Layer.provide(Layer.mergeAll(configRpcServices, Layer.mock(ReadAloud.ReadAloud)({}))),
+        ),
       ),
     );
     const configRequest = RpcMessage.RequestId("config");
