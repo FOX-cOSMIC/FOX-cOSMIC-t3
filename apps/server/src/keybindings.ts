@@ -94,6 +94,22 @@ function isSameKeybindingRule(left: KeybindingRule, right: KeybindingRule): bool
   return keybindingRuleIdentity(left) === keybindingRuleIdentity(right);
 }
 
+// Commands the app no longer has. An old keybindings.json can still hold entries for
+// them, such as our own dictation shortcut from before upstream's dictation replaced it.
+// Those entries are skipped without an issue, so they are not reported as errors and do
+// not stop the startup default sync.
+const RETIRED_KEYBINDING_COMMANDS: ReadonlySet<string> = new Set(["composer.dictate"]);
+
+function isRetiredKeybindingEntry(entry: unknown): boolean {
+  return (
+    typeof entry === "object" &&
+    entry !== null &&
+    "command" in entry &&
+    typeof entry.command === "string" &&
+    RETIRED_KEYBINDING_COMMANDS.has(entry.command)
+  );
+}
+
 const LATE_DEFAULT_KEYBINDINGS: ReadonlyArray<{
   readonly id: string;
   readonly alongside: KeybindingRule;
@@ -349,6 +365,9 @@ const make = Effect.gen(function* () {
     const keybindings: KeybindingRule[] = [];
     const issues: ServerConfigIssue[] = [];
     for (const [index, entry] of decodedEntries.value.entries()) {
+      if (isRetiredKeybindingEntry(entry)) {
+        continue;
+      }
       const decodedRule = decodeKeybindingRuleExit(entry);
       if (decodedRule._tag === "Failure") {
         const detail = Cause.pretty(decodedRule.cause);

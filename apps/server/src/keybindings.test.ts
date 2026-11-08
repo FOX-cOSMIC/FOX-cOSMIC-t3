@@ -172,6 +172,36 @@ it.layer(NodeServices.layer)("keybindings", (it) => {
     }).pipe(Effect.provide(layerKeybindings())),
   );
 
+  it.effect("ignores entries for retired commands without reporting an issue", () =>
+    Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem;
+      const { keybindingsConfigPath } = yield* ServerConfig.ServerConfig;
+      yield* fs.writeFileString(
+        keybindingsConfigPath,
+        JSON.stringify([
+          { key: "mod+j", command: "terminal.toggle" },
+          { key: "alt+space", command: "composer.dictate", when: "isMac && !terminalFocus" },
+          {
+            key: "ctrl+shift+space",
+            command: "composer.dictate",
+            when: "!isMac && !terminalFocus",
+          },
+        ]),
+      );
+
+      const configState = yield* Effect.gen(function* () {
+        const keybindings = yield* Keybindings.Keybindings;
+        return yield* keybindings.loadConfigState;
+      });
+
+      assert.isTrue(configState.keybindings.some((entry) => entry.command === "terminal.toggle"));
+      assert.isFalse(
+        configState.keybindings.some((entry) => String(entry.command) === "composer.dictate"),
+      );
+      assert.deepEqual(configState.issues, []);
+    }).pipe(Effect.provide(layerKeybindings())),
+  );
+
   it.effect("ignores invalid entries in runtime and reports them as issues", () =>
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
