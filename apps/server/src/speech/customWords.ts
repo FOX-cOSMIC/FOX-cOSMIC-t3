@@ -7,7 +7,7 @@ const WORD_CHARACTER = `[[\\p{L}\\p{M}\\p{N}\\p{Pc}]--[${UNSPACED_SCRIPTS}]]`;
 const TOKEN = new RegExp(`${LETTER}(?:[^\\s${UNSPACED_SCRIPTS}]*${LETTER})?`, "gv");
 
 /**
- * Terms match ignoring spaces and capitals, and terms of 7+ letters also match one letter off.
+ * Terms match ignoring spaces and capitals, and terms of 9+ letters also match one letter off.
  * Shorter terms match exactly only, so near misses cannot rewrite ordinary words.
  */
 export function makeSpeechTextCorrector(
@@ -83,7 +83,7 @@ export function makeSpeechTextCorrector(
       const candidate = keepSuffix ? stem : key;
       const exact = candidate === custom.key;
       const oneLetterOff =
-        custom.key.length >= 7 &&
+        custom.key.length >= 9 &&
         Math.abs(candidate.length - custom.key.length) <= 1 &&
         editDistance(candidate, custom.key) === 1;
       if (!exact && !oneLetterOff) continue;
