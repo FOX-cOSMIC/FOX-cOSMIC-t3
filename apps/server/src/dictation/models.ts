@@ -204,11 +204,6 @@ export const models = {
   }
 >;
 
-/** Invalid or unsupported selections have the same native representation as auto-detection. */
-export function resolveLanguage(model: DictationModelId, language: string): string {
-  return models[model].languageOptions.some((option) => option.code === language) ? language : "";
-}
-
 const runtimeVersion = "1.13.8";
 const runtimeIntegrity: Readonly<Record<string, string>> = {
   "darwin-arm64":
