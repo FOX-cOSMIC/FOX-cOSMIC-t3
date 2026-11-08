@@ -1,12 +1,13 @@
 import type { SpeechCustomWords } from "@t3tools/contracts";
 
-/** Fuzzy-matches preferred terms and rewrites aliases to their preferred spelling. */
+/**
+ * Terms match ignoring spaces and capitals, and terms of 7+ letters also match one letter off.
+ * Shorter terms match exactly only, so near misses cannot rewrite ordinary words.
+ */
 export function makeSpeechTextCorrector(
   words: readonly string[],
   dictionary: SpeechCustomWords = [],
 ) {
-  const MATCH_THRESHOLD = 0.18;
-
   const matchKey = (value: string) =>
     [...value]
       .filter((character) => /[\p{L}\p{N}]/u.test(character))
@@ -14,28 +15,6 @@ export function makeSpeechTextCorrector(
       .toLocaleLowerCase();
 
   const isAsciiKey = (value: string) => /^[a-z0-9]+$/i.test(value);
-
-  const soundex = (value: string) => {
-    const upper = value.toUpperCase();
-    const first = upper[0] ?? "";
-    const code = (character: string) => {
-      if ("BFPV".includes(character)) return "1";
-      if ("CGJKQSXZ".includes(character)) return "2";
-      if ("DT".includes(character)) return "3";
-      if (character === "L") return "4";
-      if ("MN".includes(character)) return "5";
-      if (character === "R") return "6";
-      return "0";
-    };
-    let previous = code(first);
-    let result = first;
-    for (const character of upper.slice(1)) {
-      const next = code(character);
-      if (next !== "0" && next !== previous) result += next;
-      previous = next;
-    }
-    return `${result}000`.slice(0, 4);
-  };
 
   const editDistance = (left: string, right: string) => {
     let previous = Array.from({ length: right.length + 1 }, (_, index) => index);
@@ -90,14 +69,14 @@ export function makeSpeechTextCorrector(
       if (inner > 0 && inner > innerPossessives(custom.word)) continue;
       const keepSuffix = suffix !== "" && !possessive.test(custom.word);
       const candidate = keepSuffix ? stem : key;
-      if (Math.min(candidate.length, custom.key.length) < 4 && candidate !== custom.key) continue;
-      const longest = Math.max(candidate.length, custom.key.length);
-      if (Math.abs(candidate.length - custom.key.length) > Math.max(longest * 0.25, 2)) continue;
-      const distance = editDistance(candidate, custom.key) / longest;
-      const phonetic = /^[a-z]+$/i.test(candidate) && /^[a-z]+$/i.test(custom.key);
-      const score =
-        phonetic && soundex(candidate) === soundex(custom.key) ? distance * 0.3 : distance;
-      if (score < MATCH_THRESHOLD && (!best || score < best.score))
+      const exact = candidate === custom.key;
+      const oneLetterOff =
+        custom.key.length >= 7 &&
+        Math.abs(candidate.length - custom.key.length) <= 1 &&
+        editDistance(candidate, custom.key) === 1;
+      if (!exact && !oneLetterOff) continue;
+      const score = exact ? 0 : 1;
+      if (!best || score < best.score)
         best = { word: custom.word, score, suffix: keepSuffix ? suffix : "" };
     }
     return best;
