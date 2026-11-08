@@ -29,6 +29,13 @@ it("matches a long term one letter off", () => {
   expect(correct("I ate at mac donalds.")).toBe("I ate at McDonald’s.");
 });
 
+it("does not rewrite a common word one letter off a seven-letter term", () => {
+  const dictionary = [{ term: "launchd", aliases: [] }];
+  const correct = makeSpeechTextCorrector(["launchd"], dictionary);
+
+  expect(correct("The launch finished.")).toBe("The launch finished.");
+});
+
 it("does not rewrite a short word one letter off a term", () => {
   const dictionary = [{ term: "Effect", aliases: [] }];
   const correct = makeSpeechTextCorrector(["Effect"], dictionary);
