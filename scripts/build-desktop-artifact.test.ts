@@ -960,6 +960,34 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
     ).pipe(Effect.provideService(HostProcess.Platform, "linux")),
   );
 
+  // The dictation runtime adds 13 native libraries, which takes the Windows payload to 82
+  // files. The default limit has to accept a payload that size.
+  it.effect("accepts a Windows payload of the size the dictation runtime produces", () =>
+    Effect.scoped(
+      Effect.gen(function* () {
+        const fs = yield* FileSystem.FileSystem;
+        const path = yield* Path.Path;
+        const fixture = yield* makeWindowsPayloadFixture({ copyUnpackedNatives: true });
+        const validate = validateWindowsPackagedPayload({
+          stageDistDir: fixture.stageDistDir,
+          appExecutableName: fixture.appExecutableName,
+          targetArch: "x64",
+          appVersion: WINDOWS_PAYLOAD_FIXTURE_VERSION,
+        });
+        const before = yield* validate;
+        const runtimeDir = path.join(fixture.packagedAppDir, "resources", "dictation-runtime");
+        yield* fs.makeDirectory(runtimeDir, { recursive: true });
+        for (let index = before.fileCount; index < 82; index++) {
+          yield* fs.writeFileString(path.join(runtimeDir, `variant-${index}.bin`), "variant");
+        }
+
+        const result = yield* validate;
+
+        assert.equal(result.fileCount, 82);
+      }),
+    ).pipe(Effect.provideService(HostProcess.Platform, "linux")),
+  );
+
   it.effect.each(["x64", "arm64"] as const)(
     "accepts an embedded archive with the Linux %s node-pty prebuild",
     (targetArch) =>
