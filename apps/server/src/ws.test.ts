@@ -1530,6 +1530,7 @@ it.effect("a missing thread worktree gets its project's skills in the cwd snapsh
         Layer.fresh(layerConfigSources),
         Layer.mock(PreviewAutomationBroker.PreviewAutomationBroker)({}),
         Layer.mock(ServerBrowser.ServerBrowser)({}),
+        Layer.mock(ReadAloud.ReadAloud)({}),
       ),
     ),
     Effect.scoped,
