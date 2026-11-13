@@ -1408,6 +1408,7 @@ it.effect("access changes made while the snapshot loads reach the client after i
         Layer.fresh(layerConfigSources),
         Layer.mock(PreviewAutomationBroker.PreviewAutomationBroker)({}),
         Layer.mock(ServerBrowser.ServerBrowser)({}),
+        Layer.mock(ReadAloud.ReadAloud)({}),
       ),
     ),
   ),
@@ -2009,6 +2010,7 @@ it.effect("a git action that fails partway still refreshes the repository status
         Layer.fresh(layerConfigSources),
         Layer.mock(PreviewAutomationBroker.PreviewAutomationBroker)({}),
         Layer.mock(ServerBrowser.ServerBrowser)({}),
+        Layer.mock(ReadAloud.ReadAloud)({}),
       ),
     ),
   ),
@@ -2597,6 +2599,7 @@ it.effect("ACP session RPCs list a thread missing its history and repair it on i
       },
     } as unknown as ProviderInstance;
     const dependencies = Layer.mergeAll(
+      Layer.mock(ReadAloud.ReadAloud)({}),
       layerUnusedConfigRpcServices,
       Layer.fresh(layerConfigSources),
       Layer.mock(ExternalLauncher.ExternalLauncher)({}),
