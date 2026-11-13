@@ -343,16 +343,13 @@ describe("scan cache round trip", () => {
   it("restores the one-hour share of Claude cache writes", () => {
     const original = cacheWith([["/claude.jsonl", 100, [record({ cacheCreation1hTokens: 4 })]]]);
 
-    const restored = decodeScanCache(
-      JSON.parse(makeScanCacheWriter()(original, {})),
-      TEST_FORMAT_MAP,
-    );
+    const restored = decodeScanCache(parse(makeScanCacheWriter()(original, {})), TEST_FORMAT_MAP);
     expect(restored.get("/claude.jsonl")?.records).toEqual([record({ cacheCreation1hTokens: 4 })]);
   });
 
   it("re-parses a Claude transcript cached before the one-hour split was counted", () => {
     const original = cacheWith([["/claude.jsonl", 100, [record()]]]);
-    const v10 = { ...JSON.parse(makeScanCacheWriter()(original, {})), version: 10 };
+    const v10 = { ...parse(makeScanCacheWriter()(original, {})), version: 10 };
 
     const restored = decodeScanCache(JSON.parse(JSON.stringify(v10)), TEST_FORMAT_MAP);
     expect(restored.get("/claude.jsonl")).toEqual({
@@ -367,9 +364,9 @@ describe("scan cache round trip", () => {
     const hasEntry = (document: unknown) =>
       decodeScanCache(document, TEST_FORMAT_MAP).has("/claude.jsonl");
 
-    expect(hasEntry(JSON.parse(makeScanCacheWriter()(original, {})))).toBe(true);
+    expect(hasEntry(parse(makeScanCacheWriter()(original, {})))).toBe(true);
     for (const oneHour of [-1, 1.5]) {
-      const document = JSON.parse(makeScanCacheWriter()(original, {}));
+      const document = parse(makeScanCacheWriter()(original, {}));
       document.files["/claude.jsonl"].r[0][13] = oneHour;
       expect(hasEntry(document)).toBe(false);
     }
@@ -381,7 +378,7 @@ describe("scan cache round trip", () => {
       ["/b.jsonl", 100, [record({ dedupeKey: "b:" })]],
       ["/c.jsonl", 100, [record({ dedupeKey: "c:", unresolvedServiceTierTurnId: "turn-1" })]],
     ]);
-    const document = JSON.parse(makeScanCacheWriter()(original, {}));
+    const document = parse(makeScanCacheWriter()(original, {}));
     // Version 10 rows had no one-hour column. The unresolved turn id came last, and only when set.
     document.version = 10;
     document.files["/a.jsonl"].r = document.files["/a.jsonl"].r.map((row: unknown[]) =>
