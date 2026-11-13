@@ -155,7 +155,7 @@ function claudeCacheLine(id: number, cacheWrites: number, oneHour: number): stri
   })}\n`;
 }
 
->const WINDOW: UsageSummaryInput = {
+const WINDOW: UsageSummaryInput = {
   timeZone: "UTC",
   sinceDay: UsageDay.make("2026-07-31"),
   untilDay: UsageDay.make("2026-08-02"),
@@ -3081,7 +3081,7 @@ describe("UsageService", () => {
           yield* first.readSummary(WINDOW);
           yield* first.awaitPersisted;
 
-          const legacy = yield* Effect.promise(async () => {
+          yield* Effect.promise(async () => {
             const document = decodeUnknownJsonString(await NodeFSP.readFile(cachePath, "utf8")) as {
               files: Record<string, { r: unknown[][]; t: unknown[][] }>;
             };
@@ -3094,7 +3094,6 @@ describe("UsageService", () => {
             await NodeFSP.rm(cachePath);
             await NodeFSP.writeFile(legacyPath, text);
             await NodeFSP.rm(deleted);
-            return text;
           });
 
           const upgraded = yield* UsageService.make;
@@ -3104,10 +3103,9 @@ describe("UsageService", () => {
           const cost = summary.buckets.reduce((sum, bucket) => sum + bucket.costUsd, 0);
           assert.ok(Math.abs(cost - 24) < 1e-9, `expected 24 USD, got ${cost}`);
           yield* upgraded.awaitPersisted;
-          assert.strictEqual(
-            yield* Effect.promise(() => NodeFSP.readFile(legacyPath, "utf8")),
-            legacy,
-          );
+          // The upgrade replaces the old file, as the other upgrade cases check.
+          const names = yield* Effect.promise(() => NodeFSP.readdir(stateDir));
+          assert.isFalse(names.includes("usage-scan-cache-v10.json"));
         }).pipe(
           Effect.provide(
             layerService({
