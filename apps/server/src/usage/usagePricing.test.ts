@@ -649,7 +649,7 @@ describe("usage pricing", () => {
       expect(priceUsage(haikuTable, writes(50_000)).costUsd).toBeCloseTo(0.00625, 10);
     });
 
-    it("uses the tier's five-minute rate for one-hour writes above a tier with no one-hour rate", () => {
+    it("scales the base one-hour rate to a tier that has no one-hour rate", () => {
       const table = parseRateTable({
         "claude-haiku-5-5": {
           input_cost_per_token: 1e-7,
@@ -662,8 +662,9 @@ describe("usage pricing", () => {
         },
       });
 
-      // 1,000,000 one-hour writes are over the tier, and the tier publishes no one-hour rate.
-      expect(priceUsage(table, writes(1_000_000, 1_000_000)).costUsd).toBeCloseTo(0.625, 10);
+      // 1,000,000 one-hour writes are over the tier, which publishes no one-hour rate. The tier takes
+      // the base one-hour rate scaled by its input price: 2e-7 x (5e-7 / 1e-7) = 1e-6 per token.
+      expect(priceUsage(table, writes(1_000_000, 1_000_000)).costUsd).toBeCloseTo(1, 10);
     });
   });
 });
