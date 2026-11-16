@@ -937,6 +937,7 @@ it.live.each([
     Effect.gen(function* () {
       const services = Layer.mergeAll(
         layerUnusedConfigRpcServices,
+        Layer.mock(ReadAloud.ReadAloud)({}),
         Layer.mock(ServerBrowser.ServerBrowser)({
           profileReporter: Effect.succeed(() => Effect.void),
         }),
