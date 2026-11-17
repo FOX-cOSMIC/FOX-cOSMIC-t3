@@ -75,6 +75,29 @@ describe("backupUserData", () => {
     }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
   );
 
+  it.effect("copies a linked speech folder as a link", () =>
+    Effect.gen(function* () {
+      const fileSystem = yield* FileSystem.FileSystem;
+      const path = yield* Path.Path;
+      const baseDir = yield* fileSystem.makeTempDirectoryScoped({ prefix: "t3-backup-" });
+      const elsewhere = path.join(baseDir, "elsewhere");
+      yield* fileSystem.makeDirectory(path.join(elsewhere, "models"), { recursive: true });
+      yield* fileSystem.makeDirectory(path.join(baseDir, "userdata"), { recursive: true });
+      yield* fileSystem.symlink(elsewhere, path.join(baseDir, "userdata", "speech"));
+
+      const folder = Option.getOrThrow(
+        yield* UserDataBackup.backupUserData({
+          baseDir,
+          fromVersion: "1.2.3",
+          targetVersion: "1.2.4",
+          now: at("2026-10-30T20:00:00.000Z"),
+        }),
+      );
+
+      assert.equal(yield* fileSystem.readLink(path.join(folder, "userdata", "speech")), elsewhere);
+    }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
+  );
+
   it.effect("keeps the three newest backups and removes older ones", () =>
     Effect.gen(function* () {
       const fileSystem = yield* FileSystem.FileSystem;
