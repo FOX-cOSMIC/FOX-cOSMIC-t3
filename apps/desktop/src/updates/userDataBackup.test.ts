@@ -37,6 +37,44 @@ describe("backupUserData", () => {
     }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
   );
 
+  it.effect("leaves out the downloaded speech models and keeps their neighbours", () =>
+    Effect.gen(function* () {
+      const fileSystem = yield* FileSystem.FileSystem;
+      const path = yield* Path.Path;
+      const baseDir = yield* fileSystem.makeTempDirectoryScoped({ prefix: "t3-backup-" });
+      const write = (relative: string) =>
+        Effect.gen(function* () {
+          const file = path.join(baseDir, "userdata", relative);
+          yield* fileSystem.makeDirectory(path.dirname(file), { recursive: true });
+          yield* fileSystem.writeFileString(file, relative);
+        });
+      yield* write("state.sqlite");
+      yield* write("speech/models/big.gguf");
+      yield* write("speech/runtime/lib.dylib");
+      yield* write("dictation/models/small.onnx");
+      yield* write("dictation/runtime/bin");
+      yield* write("logs/models/kept.log");
+
+      const folder = Option.getOrThrow(
+        yield* UserDataBackup.backupUserData({
+          baseDir,
+          fromVersion: "1.2.3",
+          targetVersion: "1.2.4",
+          now: at("2026-10-30T20:00:00.000Z"),
+        }),
+      );
+      const copied = (relative: string) =>
+        fileSystem.exists(path.join(folder, "userdata", relative));
+
+      assert.isTrue(yield* copied("state.sqlite"));
+      assert.isTrue(yield* copied("speech/runtime/lib.dylib"));
+      assert.isTrue(yield* copied("dictation/runtime/bin"));
+      assert.isTrue(yield* copied("logs/models/kept.log"));
+      assert.isFalse(yield* copied("speech/models"));
+      assert.isFalse(yield* copied("dictation/models"));
+    }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
+  );
+
   it.effect("keeps the three newest backups and removes older ones", () =>
     Effect.gen(function* () {
       const fileSystem = yield* FileSystem.FileSystem;
