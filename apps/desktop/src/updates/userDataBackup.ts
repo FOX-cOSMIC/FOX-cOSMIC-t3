@@ -55,7 +55,9 @@ const copyWithoutSkipped: (
       if (below.some((parts) => parts.length === 1)) continue;
       const from = path.join(source, name);
       const to = path.join(target, name);
-      if (below.length > 0 && (yield* fileSystem.stat(from)).type === "Directory") {
+      // A link is copied as a link, as the whole-folder copy did; only a real folder is entered.
+      const isLink = Option.isSome(yield* fileSystem.readLink(from).pipe(Effect.option));
+      if (below.length > 0 && !isLink && (yield* fileSystem.stat(from)).type === "Directory") {
         yield* copyWithoutSkipped(
           from,
           to,
