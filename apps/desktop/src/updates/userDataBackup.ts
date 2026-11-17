@@ -5,6 +5,7 @@ import * as FileSystem from "effect/FileSystem";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Path from "effect/Path";
+import * as PlatformError from "effect/PlatformError";
 import * as Schema from "effect/Schema";
 
 import * as DesktopEnvironment from "../app/DesktopEnvironment.ts";
@@ -30,11 +31,47 @@ export interface BackupUserDataInput {
   readonly now: DateTime.Utc;
 }
 
+/**
+ * Folders under userdata the copy leaves out: downloaded speech models (26 GB on the Mac), fetched
+ * again if lost. With them, the copy did not fit on the disk and cancelled the install.
+ */
+const SKIPPED_FOLDERS: ReadonlyArray<readonly string[]> = [
+  ["speech", "models"],
+  ["dictation", "models"],
+];
+
+/** Copies a folder entry by entry, leaving out the skipped folders below it. */
+const copyWithoutSkipped: (
+  source: string,
+  target: string,
+  skipped: ReadonlyArray<readonly string[]>,
+) => Effect.Effect<void, PlatformError.PlatformError, FileSystem.FileSystem | Path.Path> =
+  Effect.fn("desktop.updates.copyWithoutSkipped")(function* (source, target, skipped) {
+    const fileSystem = yield* FileSystem.FileSystem;
+    const path = yield* Path.Path;
+    yield* fileSystem.makeDirectory(target, { recursive: true });
+    for (const name of yield* fileSystem.readDirectory(source)) {
+      const below = skipped.filter((parts) => parts[0] === name);
+      if (below.some((parts) => parts.length === 1)) continue;
+      const from = path.join(source, name);
+      const to = path.join(target, name);
+      if (below.length > 0 && (yield* fileSystem.stat(from)).type === "Directory") {
+        yield* copyWithoutSkipped(
+          from,
+          to,
+          below.map((parts) => parts.slice(1)),
+        );
+      } else {
+        yield* fileSystem.copy(from, to, { preserveTimestamps: true });
+      }
+    }
+  });
+
 // Versions become part of a folder name, so anything but plain name characters becomes "-".
 const folderPart = (version: string) => version.replace(/[^A-Za-z0-9._-]/g, "-");
 
 /**
- * Copies <baseDir>/userdata into a new folder under <baseDir>/pre-update-backups, named for the
+ * Copies <baseDir>/userdata, without the speech models, into a new folder under <baseDir>/pre-update-backups, named for the
  * time and the two versions, and returns that folder. Returns none when there is no data yet.
  * The caller stops the backends first, so the database is closed and the copy is consistent.
  */
@@ -52,7 +89,7 @@ export const backupUserData = Effect.fn("desktop.updates.backupUserData")(
       `${stamp}_${folderPart(input.fromVersion)}_to_${folderPart(input.targetVersion)}`,
     );
     yield* fileSystem.makeDirectory(folder, { recursive: true });
-    yield* fileSystem.copy(source, path.join(folder, "userdata"), { preserveTimestamps: true });
+    yield* copyWithoutSkipped(source, path.join(folder, "userdata"), SKIPPED_FOLDERS);
 
     // Names start with the time, so sorting them puts the oldest first. A failed cleanup keeps the new copy.
     const names = (yield* fileSystem.readDirectory(backupsDir)).toSorted();
