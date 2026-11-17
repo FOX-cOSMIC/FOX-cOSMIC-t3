@@ -15,14 +15,14 @@ cost, split by token type and by speed. These estimates are not your subscriptio
 split, such as a provider-reported cost for a model without public rates, shows as **Other**.
 Select a model under **Breakdown** to see its trend, cache hit rate, and cost per million tokens.
 
-Totals depend on the history available on each server. Grok turns without a saved completed-turn
+Totals depend on the history each server has saved, which keeps transcripts deleted since they were read. Grok turns without a saved completed-turn
 record are missing from the totals.
 Text generation (thread titles, commit messages, PR text, branch names and review guides) is not in
 the totals for Codex or Claude Code 2.0.63 and newer, because those runs save no session history.
 
-The server keeps scanned usage history for 92 days by default. Claude Code deletes its own
-transcripts after 30 days, so for older Claude usage this history is the only record left. To keep
-it longer, set `usageHistoryRetentionDays` in `<T3 home>/userdata/settings.json` to a number of days
+The server keeps scanned usage history for good by default (`"unlimited"`). Claude Code deletes its own
+transcripts after 30 days, so for older Claude usage this history is the only record left. To limit
+it, set `usageHistoryRetentionDays` in `<T3 home>/userdata/settings.json` to a number of days
 such as `365`, or to `"unlimited"`. Usage views still show at most 90 days. Lowering the value
 prunes older history on the next refresh, and raising it again does not bring pruned history back.
 While `settings.json` cannot be read, nothing is pruned.
