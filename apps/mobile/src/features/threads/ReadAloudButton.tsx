@@ -1,6 +1,7 @@
 import { useAtomValue } from "@effect/atom-react";
 import type { EnvironmentId, ReadAloudLanguage } from "@t3tools/contracts";
 import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
+import { useGT, useMessages } from "gt-react-native";
 import { useSyncExternalStore } from "react";
 import { Pressable, View } from "react-native";
 import { AppText } from "../../components/ui/AppText";
@@ -29,6 +30,8 @@ export function ReadAloudButton(props: {
   messageId: string;
   text: string;
 }) {
+  const gt = useGT();
+  const m = useMessages();
   const state = useSyncExternalStore(
     readAloudPlayback.subscribe,
     readAloudPlayback.snapshot,
@@ -55,10 +58,10 @@ export function ReadAloudButton(props: {
             <Action
               label={
                 state.phase === "loading"
-                  ? "Generating voice…"
+                  ? gt("Generating voice…")
                   : state.phase === "playing"
-                    ? "Pause voice"
-                    : "Play voice"
+                    ? gt("Pause voice")
+                    : gt("Play voice")
               }
               disabled={state.phase === "loading"}
               onPress={() =>
@@ -67,18 +70,18 @@ export function ReadAloudButton(props: {
                   : void readAloudPlayback.resume()
               }
             />
-            <Action label="Stop voice" onPress={readAloudPlayback.stop} />
+            <Action label={gt("Stop voice")} onPress={readAloudPlayback.stop} />
           </>
         ) : (
           <>
-            <Action label="Read English" disabled={!allowed} onPress={() => start("en")} />
-            <Action label="Read German" disabled={!allowed} onPress={() => start("de")} />
+            <Action label={gt("Read English")} disabled={!allowed} onPress={() => start("en")} />
+            <Action label={gt("Read German")} disabled={!allowed} onPress={() => start("de")} />
           </>
         )}
       </View>
       {active && state.error ? (
         <AppText accessibilityRole="alert" className="text-xs text-foreground-secondary">
-          {state.error}
+          {m(state.error)}
         </AppText>
       ) : null}
     </View>

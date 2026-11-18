@@ -171,6 +171,9 @@
   "fc34e41fa0315912": "{names} reacted with eyes emoji",
   "0c982111ac348e9f": "You",
   "766ea446df1695f7": "Answer the question to edit queued messages",
+  "14f134fd9f52c26f": "Audio is ready. Press Play to start playback.",
+  "9c20e349cc07907c": "This device could not play the generated audio.",
+  "143cf3a569ac2314": "Read aloud failed. Please try again.",
   "257dc29de5b1f1f7": "Context, no code",
   "edb97296086ba31e": "{count, plural, one {{count} file} other {{count} files}}",
   "556df31b330166ff": "Enter a name for this view.",
@@ -3237,7 +3240,10 @@
     {
       "t": "span",
       "i": 2,
-      "c": [" ", "on the computer that opened this page"]
+      "c": [
+        " ",
+        "on the computer that opened this page"
+      ]
     }
   ],
   "b2d53b4d1d48fbef": [
@@ -3249,7 +3255,10 @@
     {
       "t": "span",
       "i": 2,
-      "c": [" ", "· whoever runs it gets this access"]
+      "c": [
+        " ",
+        "· whoever runs it gets this access"
+      ]
     }
   ],
   "c54cc9c75db9dc58": "Only approve a sign-in you just started.",
@@ -4112,6 +4121,7 @@
   "de5c52c3f47ff209": "Sent by T3 Code",
   "ded43a280aed9f20": "Open thread",
   "7635dd64bbbe10ec": "Open automation",
+  "f6737ab2f0520c04": "Stop reading aloud",
   "6327e4ffa0f2366d": "Pull requests unavailable",
   "90062342f04966ff": "Update this environment's T3 Code server to browse pull requests.",
   "5e7157db126f1641": "Issues unavailable",
@@ -8895,6 +8905,7 @@
   "3d020305e2e56076": "Usage: Period: 7 days",
   "1a2dc81e3dc40be8": "Usage: Period: 30 days",
   "718ca73c22303297": "Usage: Period: 90 days",
+  "def19423ca8b0cde": "Usage: Period: All time",
   "77cc8be47de8ec5c": "Reopen Closed Tab",
   "69953eacfa5204be": "Preview: Focus URL",
   "0754bfbdfe21adc3": "Preview: Find on Page",
@@ -12512,6 +12523,7 @@
   "2cddd6095abc734a": "7 days",
   "53493056306708cf": "30 days",
   "c719359d18d37ad3": "90 days",
+  "ef5278f9768195da": "All time",
   "0bd950151ddc6407": "Leave without saving? Your changes to this file are lost.",
   "c0ba3f6756b09f30": "Unsaved changes",
   "6914e22d357f0ad6": "Saved and running",
@@ -13058,6 +13070,10 @@
   ],
   "717c1c47a852a1a5": "Pause narration",
   "0eceb5780908eb6c": "Read aloud",
+  "a549d66d69a42c10": "Generating voice…",
+  "6848686ec40ee487": "Pause",
+  "9342e43f52bc891b": "Play",
+  "c498a231735881d7": "Read aloud",
   "3ee98da81538c6de": "Could not play narration.",
   "95435f0b59cb2193": "Audio preview",
   "4a12506938295127": "Enter the {field} first.",
