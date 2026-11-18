@@ -2,6 +2,7 @@ import { useAtomValue } from "@effect/atom-react";
 import type { EnvironmentId } from "@t3tools/contracts";
 import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
 import { Volume2Icon, PauseIcon, SquareIcon } from "lucide-react";
+import { T, useGT, useMessages } from "gt-react";
 import { useSyncExternalStore } from "react";
 import { readAloudPlayback } from "../../lib/readAloudPlayback";
 import { readAloudEnvironment } from "../../state/readAloud";
@@ -14,6 +15,8 @@ export function ReadAloudButton(props: {
   messageId: string;
   text: string;
 }) {
+  const gt = useGT();
+  const m = useMessages();
   const state = useSyncExternalStore(
     readAloudPlayback.subscribe,
     readAloudPlayback.snapshot,
@@ -51,16 +54,18 @@ export function ReadAloudButton(props: {
             ) : (
               <Volume2Icon className="size-3" />
             )}
-            {state.phase === "loading"
-              ? "Generating voice…"
-              : state.phase === "playing"
-                ? "Pause"
-                : "Play"}
+            {state.phase === "loading" ? (
+              <T>Generating voice…</T>
+            ) : state.phase === "playing" ? (
+              <T>Pause</T>
+            ) : (
+              <T>Play</T>
+            )}
           </Button>
           <Button
             size="icon-xs"
             variant="ghost-muted"
-            aria-label="Stop reading aloud"
+            aria-label={gt("Stop reading aloud")}
             onClick={readAloudPlayback.stop}
           >
             <SquareIcon className="size-3" />
@@ -71,16 +76,16 @@ export function ReadAloudButton(props: {
           size="xs"
           variant="ghost-muted"
           disabled={!allowed}
-          aria-label="Read aloud"
+          aria-label={gt("Read aloud")}
           onClick={start}
         >
           <Volume2Icon className="size-3" />
-          Read aloud
+          <T>Read aloud</T>
         </Button>
       )}
       {active && state.error ? (
         <span role="status" className="max-w-sm text-xs text-muted-foreground">
-          {state.error}
+          {m(state.error)}
         </span>
       ) : null}
     </div>
