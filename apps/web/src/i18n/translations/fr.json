@@ -171,6 +171,9 @@
   "fc34e41fa0315912": "{names} a réagi avec l’emoji yeux",
   "0c982111ac348e9f": "Vous",
   "766ea446df1695f7": "Répondez à la question pour modifier les messages en file d’attente",
+  "14f134fd9f52c26f": "Audio is ready. Press Play to start playback.",
+  "9c20e349cc07907c": "This device could not play the generated audio.",
+  "143cf3a569ac2314": "Read aloud failed. Please try again.",
   "257dc29de5b1f1f7": "Contexte, sans code",
   "edb97296086ba31e": "{count, plural, one {{count} fichier} other {{count} fichiers}}",
   "556df31b330166ff": "Saisissez un nom pour cette vue.",
@@ -3237,7 +3240,10 @@
     {
       "t": "span",
       "i": 2,
-      "c": [" ", "sur l’ordinateur qui a ouvert cette page"]
+      "c": [
+        " ",
+        "sur l’ordinateur qui a ouvert cette page"
+      ]
     }
   ],
   "b2d53b4d1d48fbef": [
@@ -3249,7 +3255,10 @@
     {
       "t": "span",
       "i": 2,
-      "c": [" ", "· quiconque l’exécute obtient cet accès"]
+      "c": [
+        " ",
+        "· quiconque l’exécute obtient cet accès"
+      ]
     }
   ],
   "c54cc9c75db9dc58": "N’approuvez qu’une connexion que vous venez de lancer.",
@@ -4111,6 +4120,7 @@
   "de5c52c3f47ff209": "Envoyé par T3 Code",
   "ded43a280aed9f20": "Ouvrir le fil",
   "7635dd64bbbe10ec": "Ouvrir l’automatisation",
+  "f6737ab2f0520c04": "Stop reading aloud",
   "6327e4ffa0f2366d": "Pull requests indisponibles",
   "90062342f04966ff": "Mettez à jour le serveur T3 Code de cet environnement pour parcourir les pull requests.",
   "5e7157db126f1641": "Tickets indisponibles",
@@ -8880,6 +8890,7 @@
   "3d020305e2e56076": "Utilisation : période : 7 jours",
   "1a2dc81e3dc40be8": "Utilisation : période : 30 jours",
   "718ca73c22303297": "Utilisation : période : 90 jours",
+  "def19423ca8b0cde": "Usage: Period: All time",
   "77cc8be47de8ec5c": "Rouvrir l’onglet fermé",
   "69953eacfa5204be": "Aperçu : focus sur l’URL",
   "0754bfbdfe21adc3": "Aperçu : rechercher dans la page",
@@ -12496,6 +12507,7 @@
   "2cddd6095abc734a": "7 jours",
   "53493056306708cf": "30 jours",
   "c719359d18d37ad3": "90 jours",
+  "ef5278f9768195da": "All time",
   "0bd950151ddc6407": "Quitter sans enregistrer ? Vos modifications de ce fichier seront perdues.",
   "c0ba3f6756b09f30": "Modifications non enregistrées",
   "6914e22d357f0ad6": "Enregistré et en service",
@@ -13043,6 +13055,10 @@
   ],
   "717c1c47a852a1a5": "Mettre la narration en pause",
   "0eceb5780908eb6c": "Lire à voix haute",
+  "a549d66d69a42c10": "Generating voice…",
+  "6848686ec40ee487": "Pause",
+  "9342e43f52bc891b": "Play",
+  "c498a231735881d7": "Read aloud",
   "3ee98da81538c6de": "Impossible de lire la narration.",
   "95435f0b59cb2193": "Aperçu audio",
   "4a12506938295127": "Saisissez d’abord {field}.",

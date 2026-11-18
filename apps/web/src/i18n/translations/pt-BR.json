@@ -171,6 +171,9 @@
   "fc34e41fa0315912": "{names} reagiu com o emoji de olhos",
   "0c982111ac348e9f": "Você",
   "766ea446df1695f7": "Responda à pergunta para editar as mensagens na fila",
+  "14f134fd9f52c26f": "Audio is ready. Press Play to start playback.",
+  "9c20e349cc07907c": "This device could not play the generated audio.",
+  "143cf3a569ac2314": "Read aloud failed. Please try again.",
   "257dc29de5b1f1f7": "Contexto, sem código",
   "edb97296086ba31e": "{count, plural, one {{count} arquivo} other {{count} arquivos}}",
   "556df31b330166ff": "Digite um nome para esta visualização.",
@@ -3237,7 +3240,10 @@
     {
       "t": "span",
       "i": 2,
-      "c": [" ", "no computador que abriu esta página"]
+      "c": [
+        " ",
+        "no computador que abriu esta página"
+      ]
     }
   ],
   "b2d53b4d1d48fbef": [
@@ -3249,7 +3255,10 @@
     {
       "t": "span",
       "i": 2,
-      "c": [" ", "· quem executar recebe este acesso"]
+      "c": [
+        " ",
+        "· quem executar recebe este acesso"
+      ]
     }
   ],
   "c54cc9c75db9dc58": "Aprove apenas um login que você acabou de iniciar.",
@@ -4111,6 +4120,7 @@
   "de5c52c3f47ff209": "Enviado pelo T3 Code",
   "ded43a280aed9f20": "Abrir thread",
   "7635dd64bbbe10ec": "Abrir automação",
+  "f6737ab2f0520c04": "Stop reading aloud",
   "6327e4ffa0f2366d": "Pull requests indisponíveis",
   "90062342f04966ff": "Atualize o servidor do T3 Code deste ambiente para navegar pelos pull requests.",
   "5e7157db126f1641": "Issues indisponíveis",
@@ -8879,6 +8889,7 @@
   "3d020305e2e56076": "Uso: período: 7 dias",
   "1a2dc81e3dc40be8": "Uso: período: 30 dias",
   "718ca73c22303297": "Uso: período: 90 dias",
+  "def19423ca8b0cde": "Usage: Period: All time",
   "77cc8be47de8ec5c": "Reabrir aba fechada",
   "69953eacfa5204be": "Pré-visualização: focar URL",
   "0754bfbdfe21adc3": "Pré-visualização: localizar na página",
@@ -12496,6 +12507,7 @@
   "2cddd6095abc734a": "7 dias",
   "53493056306708cf": "30 dias",
   "c719359d18d37ad3": "90 dias",
+  "ef5278f9768195da": "All time",
   "0bd950151ddc6407": "Sair sem salvar? Suas alterações neste arquivo serão perdidas.",
   "c0ba3f6756b09f30": "Alterações não salvas",
   "6914e22d357f0ad6": "Salvo e em execução",
@@ -13043,6 +13055,10 @@
   ],
   "717c1c47a852a1a5": "Pausar narração",
   "0eceb5780908eb6c": "Ler em voz alta",
+  "a549d66d69a42c10": "Generating voice…",
+  "6848686ec40ee487": "Pause",
+  "9342e43f52bc891b": "Play",
+  "c498a231735881d7": "Read aloud",
   "3ee98da81538c6de": "Não foi possível reproduzir a narração.",
   "95435f0b59cb2193": "Prévia de áudio",
   "4a12506938295127": "Informe primeiro {field}.",
