@@ -1,8 +1,10 @@
+import { msg } from "gt-i18n";
 import type { ReadAloudAudio, ReadAloudInput } from "@t3tools/contracts";
 
 export interface ReadAloudPlaybackState {
   readonly key: string | null;
   readonly phase: "idle" | "loading" | "playing" | "paused" | "ready" | "error";
+  /** A `msg()` from this module, or an error text from the server; clients resolve it with `m()`. */
   readonly error: string | null;
 }
 
@@ -43,7 +45,7 @@ export function createReadAloudPlayback(driver: ReadAloudDriver) {
         update({
           ...state,
           phase: "ready",
-          error: "Audio is ready. Press Play to start playback.",
+          error: msg("Audio is ready. Press Play to start playback."),
         });
     }
   };
@@ -87,7 +89,7 @@ export function createReadAloudPlayback(driver: ReadAloudDriver) {
               update({
                 ...state,
                 phase: "error",
-                error: "This device could not play the generated audio.",
+                error: msg("This device could not play the generated audio."),
               });
             }
           },
@@ -100,7 +102,8 @@ export function createReadAloudPlayback(driver: ReadAloudDriver) {
         update({
           key,
           phase: "error",
-          error: error instanceof Error ? error.message : "Read aloud failed. Please try again.",
+          error:
+            error instanceof Error ? error.message : msg("Read aloud failed. Please try again."),
         });
       }
     },
