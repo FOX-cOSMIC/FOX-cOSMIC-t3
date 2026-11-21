@@ -225,6 +225,12 @@ import {
 } from "./ComposerAttachmentStrip";
 import { CollapsedComposerStopAction, ComposerPrimaryActions } from "./ComposerPrimaryActions";
 import { ComposerFooterPrimaryActions } from "./ComposerFooterControls";
+import { providerSupportsManualCompaction } from "./compaction.logic";
+import {
+  resolveContextWindowModelDisplayName,
+  resolveProviderReportsContextWindow,
+} from "./ContextWindowMeter.logic";
+import type { ContextWindowSnapshot } from "@t3tools/client-runtime/state/context-window";
 import { ComposerPendingUserInputPanel } from "./ComposerPendingUserInputPanel";
 import { resolveComposerMenuActiveItemId } from "./composerMenuHighlight";
 import { buildPullRequestReferenceContext } from "../pullRequest/pullRequestDetail.logic";
@@ -433,8 +439,13 @@ export interface ChatComposerProps {
   activeProjectId: ProjectId | null;
   projectName?: string | undefined;
 
+  /** The ring's usage; ChatView leaves it out while a handoff or a /clear session is pending. */
+  contextWindow: ContextWindowSnapshot | null;
+  /** A started thread's details are loading, so the ring's slot is held. */
+  startedThreadDetailLoading: boolean;
   compactThreadUnavailable: boolean;
   compactDisabled: boolean;
+  compactDisabledReason: string | null;
 
   resolvedTheme: "light" | "dark";
   settings: UnifiedSettings;
@@ -566,8 +577,11 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
     reportedModelSelection,
     activeProjectId,
     projectName,
+    contextWindow,
+    startedThreadDetailLoading,
     compactThreadUnavailable,
     compactDisabled,
+    compactDisabledReason,
     resolvedTheme,
     settings,
     keybindings,
@@ -1030,6 +1044,11 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
         (multipleModelSelections === null ? providerSendBlockReason : null)));
   const isSendDisabled = sendDisabledReason !== null;
   const selectedProviderStatus = selectedProviderEntry?.snapshot ?? null;
+  const providerReportsContextWindow = resolveProviderReportsContextWindow({
+    catalogKnown: providerCatalogKnown,
+    providerStatus: selectedProviderStatus,
+  });
+  const compactCommandAvailable = providerSupportsManualCompaction(selectedProviderEntry);
   const selectedProviderSkills = selectedProviderStatus
     ? resolveProviderSkillsForCwd(selectedProviderStatus, gitCwd)
     : NO_PROVIDER_SKILLS;
@@ -1062,6 +1081,11 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
       ),
     );
   }
+
+  const activeThreadModelDisplayName = resolveContextWindowModelDisplayName(
+    activeThreadModelSelection,
+    modelOptionsByInstance,
+  );
 
   const selectedModelForPickerWithCustomFallback = (() => {
     const currentOptions = modelOptionsByInstance.get(selectedInstanceId) ?? [];
@@ -4112,6 +4136,16 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
                     hideCompactToggle={dictationTakesFooter}
                     keepFullHistory={props.keepFullHistory}
                     onToggleKeepFullHistory={props.onToggleKeepFullHistory}
+                    activeContextWindow={contextWindow}
+                    providerReportsContextWindow={providerReportsContextWindow}
+                    startedThreadDetailLoading={startedThreadDetailLoading}
+                    dictationTakesFooter={dictationTakesFooter}
+                    activeThreadModelDisplayName={activeThreadModelDisplayName}
+                    compactDisabledReason={compactDisabledReason}
+                    noProviderAvailable={noProviderAvailable}
+                    {...(compactCommandAvailable
+                      ? { onCompactContext: compactThreadContextStable }
+                      : {})}
                   >
                     {speechInput.available ? (
                       <>
