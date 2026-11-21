@@ -3,12 +3,18 @@ import { createModelSelection } from "@t3tools/shared/model";
 import { T, useGT, useMessages } from "gt-react";
 import { type ComponentProps, memo, useId, useRef, useState } from "react";
 
+import type { ContextWindowSnapshot } from "@t3tools/client-runtime/state/context-window";
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { Menu, MenuPopup, MenuTrigger } from "../ui/menu";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { ComposerControl, ComposerControlIcon } from "./ComposerControl";
 import { focusRequestedPermission, useComposerMenuProps } from "./composerEventScope";
 import { ComposerPrimaryActions } from "./ComposerPrimaryActions";
+import { ContextWindowMeter, ContextWindowMeterPlaceholder } from "./ContextWindowMeter";
+import {
+  resolveContextWindowCompactDisabledReason,
+  resolveContextWindowMeterSlot,
+} from "./ContextWindowMeter.logic";
 import { resolveModelPickerSelectedModel } from "./ModelPickerContent";
 import { ProviderModelPicker } from "./ProviderModelPicker";
 import { resolveRuntimeModeOption, runtimeModeConfig } from "./runtimeModeConfig";
@@ -225,9 +231,46 @@ export const ComposerFooterPrimaryActions = memo(function ComposerFooterPrimaryA
   hideCompactToggle: boolean;
   keepFullHistory: boolean;
   onToggleKeepFullHistory: () => void;
+  activeContextWindow: ContextWindowSnapshot | null;
+  /** The selected provider's flag; `null` while the catalog does not list the provider yet. */
+  providerReportsContextWindow: boolean | null | undefined;
+  startedThreadDetailLoading: boolean;
+  /** Dictation takes the whole footer row, so the ring and its slot hide. */
+  dictationTakesFooter: boolean;
+  activeThreadModelDisplayName: string | null;
+  onCompactContext?: (() => void) | undefined;
+  /** ChatView's reason, set whenever the thread itself cannot compact. */
+  compactDisabledReason: string | null;
+  noProviderAvailable: boolean;
 }) {
+  const m = useMessages();
+  const contextWindowMeterSlot = resolveContextWindowMeterSlot({
+    hasSnapshot: props.activeContextWindow !== null,
+    providerReportsContextWindow: props.providerReportsContextWindow,
+    startedThreadDetailLoading: props.startedThreadDetailLoading,
+    footerTakenByDictation: props.dictationTakesFooter,
+  });
+  const compactDisabledReason = resolveContextWindowCompactDisabledReason(
+    {
+      threadDisabledReason: props.compactDisabledReason,
+      noProviderAvailable: props.noProviderAvailable,
+      isSendBusy: props.isSendBusy,
+    },
+    m,
+  );
   return (
     <>
+      {props.activeContextWindow && contextWindowMeterSlot === "ring" ? (
+        <ContextWindowMeter
+          usage={props.activeContextWindow}
+          modelDisplayName={props.activeThreadModelDisplayName}
+          onCompact={props.onCompactContext}
+          compactDisabled={compactDisabledReason !== null}
+          compactDisabledReason={compactDisabledReason}
+        />
+      ) : contextWindowMeterSlot === "placeholder" ? (
+        <ContextWindowMeterPlaceholder />
+      ) : null}
       <ComposerPrimaryActions
         compact={props.compact}
         canOperateThread={props.canOperateThread}
