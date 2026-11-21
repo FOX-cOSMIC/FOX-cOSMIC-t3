@@ -370,6 +370,10 @@ import { ComposerSurface } from "./chat/ComposerSurface";
 import { resolveThreadSyncPhase } from "../threadSync";
 import { hasAvailableCompactionProvider } from "./chat/compaction.logic";
 import {
+  isStartedThreadDetailLoading,
+  resolveComposerContextWindow,
+} from "./chat/ContextWindowMeter.logic";
+import {
   deriveLatestContextWindowSnapshot,
   hasDismissedResumeCompaction,
   latestProviderTurnTokenUsage,
@@ -2688,6 +2692,15 @@ export default function ChatView(props: ChatViewProps) {
     pendingUserInputs.length > 0;
   // A typed /compact queues behind a running turn, so only the immediate compaction waits for idle.
   const compactDisabled = compactThreadUnavailable || isWorking;
+  const compactDisabledReason = compactDisabled
+    ? !canOperateThread
+      ? gt("This connection cannot change threads.")
+      : !activeProject
+        ? gt("Choose a project before compacting")
+        : !manualCompactionProviderAvailable
+          ? gt("Compaction is unavailable for this provider")
+          : gt("Compacting is unavailable right now")
+    : null;
   const freshSessionAvailable =
     activeMessageCount > 0 && serverConfig?.environment.capabilities.freshContext === true;
   const freshSessionArmed = useFreshSessionArmed(routeThreadKey);
@@ -3974,8 +3987,18 @@ export default function ChatView(props: ChatViewProps) {
                                 activeThreadModelSelection={activeThread?.modelSelection}
                                 activeProjectId={activeProject?.id ?? null}
                                 projectName={activeProject?.title}
+                                contextWindow={resolveComposerContextWindow(activeContextWindow, {
+                                  handoffPending: pendingHandoff !== null,
+                                  freshSessionPending,
+                                })}
+                                startedThreadDetailLoading={isStartedThreadDetailLoading({
+                                  detailLoading: threadDetailLoading,
+                                  environmentUnavailable: activeEnvironmentUnavailable,
+                                  threadStarted: threadHasStarted(serverThread),
+                                })}
                                 compactThreadUnavailable={compactThreadUnavailable}
                                 compactDisabled={compactDisabled}
+                                compactDisabledReason={compactDisabledReason}
                                 resolvedTheme={resolvedTheme}
                                 settings={settings}
                                 keybindings={keybindings}
