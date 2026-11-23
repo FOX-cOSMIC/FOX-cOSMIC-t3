@@ -426,6 +426,15 @@ const layerPlatformServices = DocumentText.layer.pipe(
 
 const layerDictationArtifacts = DictationArtifacts.layer;
 
+const layerReadAloud = ReadAloud.layer.pipe(
+  Layer.provide(
+    ReadAloudEngine.layer.pipe(
+      Layer.provide(ProcessRunner.layer),
+      Layer.provide(layerDictationArtifacts),
+    ),
+  ),
+);
+
 const layerPersistence = Layer.empty.pipe(Layer.provideMerge(SqlitePersistence.layerConfig));
 
 const layerVcsDriverRegistry = VcsDriverRegistry.layer.pipe(Layer.provide(VcsProjectConfig.layer));
@@ -797,17 +806,8 @@ const layerRuntimeCoreDependenciesBase = Layer.mergeAll(
   // Above the settings it writes when a theme is applied.
   Layer.provideMerge(EnvironmentTheme.layer),
   Layer.provideMerge(layerServerSettings),
-  Layer.provideMerge(
-    ReadAloud.layer.pipe(
-      Layer.provide(
-        ReadAloudEngine.layer.pipe(
-          Layer.provide(ProcessRunner.layer),
-          Layer.provide(layerDictationArtifacts),
-        ),
-      ),
-    ),
-  ),
-  Layer.provideMerge(layerSourceControlProviderRegistry),
+  // local: merged into one step, because one pipe takes at most 20 and read aloud would be the 21st.
+  Layer.provideMerge(Layer.merge(layerReadAloud, layerSourceControlProviderRegistry)),
   Layer.provideMerge(layerGit),
   Layer.provideMerge(layerVcs),
   Layer.provideMerge(Layer.mergeAll(layerTerminal, layerPreview, layerDevice)),
