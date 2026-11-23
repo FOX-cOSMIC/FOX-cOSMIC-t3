@@ -1065,8 +1065,8 @@ export function resolveWindowsServerAsarIgnoreGlobs(arch: typeof BuildArch.Type)
 }
 
 // Keeps Windows update installs fast. The dictation runtime's 13 native libraries and read aloud
-// brought the payload to 91 files on 2026-11-15, so the limit leaves room for a few more.
-export const WINDOWS_PACKAGED_PAYLOAD_FILE_LIMIT = 100;
+// brought the payload to 105 files on 2026-11-23, so the limit leaves room for a few more.
+export const WINDOWS_PACKAGED_PAYLOAD_FILE_LIMIT = 115;
 export const WINDOWS_SERVER_RESOURCE_SOURCE_DIR = "apps/desktop/prod-resources/windows-server";
 export const WINDOWS_SERVER_EXTRA_RESOURCES = [
   {
