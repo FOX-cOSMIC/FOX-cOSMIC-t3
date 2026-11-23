@@ -1034,7 +1034,7 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
   );
 
   // The dictation runtime adds 13 native libraries. With read aloud, the Windows payload was
-  // 91 files on 2026-11-15. The default limit has to accept a payload that size.
+  // 105 files on 2026-11-23. The default limit has to accept a payload that size.
   it.effect("accepts a Windows payload of the size the voice build produces", () =>
     Effect.scoped(
       Effect.gen(function* () {
@@ -1050,13 +1050,13 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
         const before = yield* validate;
         const runtimeDir = path.join(fixture.packagedAppDir, "resources", "dictation-runtime");
         yield* fs.makeDirectory(runtimeDir, { recursive: true });
-        for (let index = before.fileCount; index < 91; index++) {
+        for (let index = before.fileCount; index < 105; index++) {
           yield* fs.writeFileString(path.join(runtimeDir, `variant-${index}.bin`), "variant");
         }
 
         const result = yield* validate;
 
-        assert.equal(result.fileCount, 91);
+        assert.equal(result.fileCount, 105);
       }),
     ).pipe(Effect.provideService(HostProcess.Platform, "linux")),
   );
