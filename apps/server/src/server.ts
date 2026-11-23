@@ -778,53 +778,57 @@ const layerRuntimeCoreDependenciesBase = Layer.mergeAll(
   ProviderInstallation.layer,
   ReplayMarkers.layer,
   Layer.effectDiscard(ProjectSettingsOverrideSweep.sweep),
-).pipe(
-  Layer.provideMerge(layerOrchestrationApplication),
-  // One hub, which the feeders above and the workflow store inside the runtime publish to.
-  Layer.provideMerge(MilestoneHub.layer),
-  Layer.provideMerge(layerTaskFolders),
-  Layer.provideMerge(RuntimeLayer.layerEventInfrastructure),
-  Layer.provideMerge(Layer.merge(ProjectStore.layer, ThreadSearch.layer)),
-  Layer.provideMerge(SecretCheck.layer),
-  Layer.provideMerge(SecretResolver.layer),
-  // Above the settings it writes when a theme is applied.
-  Layer.provideMerge(EnvironmentTheme.layer),
-  Layer.provideMerge(layerServerSettings),
-  Layer.provideMerge(
-    ReadAloud.layer.pipe(
-      Layer.provide(
-        ReadAloudEngine.layer.pipe(
-          Layer.provide(ProcessRunner.layer),
-          Layer.provide(layerDictationArtifacts),
+)
+  .pipe(
+    Layer.provideMerge(layerOrchestrationApplication),
+    // One hub, which the feeders above and the workflow store inside the runtime publish to.
+    Layer.provideMerge(MilestoneHub.layer),
+    Layer.provideMerge(layerTaskFolders),
+    Layer.provideMerge(RuntimeLayer.layerEventInfrastructure),
+    Layer.provideMerge(Layer.merge(ProjectStore.layer, ThreadSearch.layer)),
+    Layer.provideMerge(SecretCheck.layer),
+    Layer.provideMerge(SecretResolver.layer),
+    // Above the settings it writes when a theme is applied.
+    Layer.provideMerge(EnvironmentTheme.layer),
+    Layer.provideMerge(layerServerSettings),
+    // local: a second pipe, because one pipe takes at most 20 steps and read aloud adds one.
+  )
+  .pipe(
+    Layer.provideMerge(
+      ReadAloud.layer.pipe(
+        Layer.provide(
+          ReadAloudEngine.layer.pipe(
+            Layer.provide(ProcessRunner.layer),
+            Layer.provide(layerDictationArtifacts),
+          ),
         ),
       ),
     ),
-  ),
-  Layer.provideMerge(layerSourceControlProviderRegistry),
-  Layer.provideMerge(layerGit),
-  Layer.provideMerge(layerVcs),
-  Layer.provideMerge(Layer.mergeAll(layerTerminal, layerPreview, layerDevice)),
-  Layer.provideMerge(layerPersistence),
-  Layer.provideMerge(Layer.mergeAll(Keybindings.layer, UsageLimitSources.layer)),
-  Layer.provideMerge(ProviderRegistry.layer),
-  Layer.provideMerge(
-    ProviderInstanceRegistryHydration.layer.pipe(Layer.provide(SqlitePersistence.layerConfig)),
-  ),
-  // One gate for the server, below hydration so the Claude adapter sees it: layers memoize by
-  // reference, so the runtime layer shares it.
-  Layer.provideMerge(ProviderInstallationGate.layer),
-  // Provider hydration builds the Claude runner, which reports agents to the same scanner the
-  // terminal and preview layers share.
-  Layer.provideMerge(layerPortScanner),
-  Layer.provideMerge(
-    Layer.mergeAll(
-      AntigravityInstallation.AntigravityInstallation.layer.pipe(
-        Layer.provide(layerServerSettings),
-      ),
-      CodexInstallation.CodexInstallation.layer,
+    Layer.provideMerge(layerSourceControlProviderRegistry),
+    Layer.provideMerge(layerGit),
+    Layer.provideMerge(layerVcs),
+    Layer.provideMerge(Layer.mergeAll(layerTerminal, layerPreview, layerDevice)),
+    Layer.provideMerge(layerPersistence),
+    Layer.provideMerge(Layer.mergeAll(Keybindings.layer, UsageLimitSources.layer)),
+    Layer.provideMerge(ProviderRegistry.layer),
+    Layer.provideMerge(
+      ProviderInstanceRegistryHydration.layer.pipe(Layer.provide(SqlitePersistence.layerConfig)),
     ),
-  ),
-);
+    // One gate for the server, below hydration so the Claude adapter sees it: layers memoize by
+    // reference, so the runtime layer shares it.
+    Layer.provideMerge(ProviderInstallationGate.layer),
+    // Provider hydration builds the Claude runner, which reports agents to the same scanner the
+    // terminal and preview layers share.
+    Layer.provideMerge(layerPortScanner),
+    Layer.provideMerge(
+      Layer.mergeAll(
+        AntigravityInstallation.AntigravityInstallation.layer.pipe(
+          Layer.provide(layerServerSettings),
+        ),
+        CodexInstallation.CodexInstallation.layer,
+      ),
+    ),
+  );
 
 const layerRuntimeCoreDependencies = layerRuntimeCoreDependenciesBase.pipe(
   Layer.provideMerge(layerPtyAdapter),
