@@ -2816,6 +2816,7 @@ const makeWorkflowClient = Effect.fn("test.makeWorkflowClient")(function* (
 });
 const layerWorkflowRpcTest = Layer.mergeAll(
   Layer.fresh(layerConfigSources),
+  Layer.mock(ReadAloud.ReadAloud)({}),
   Layer.mock(PreviewAutomationBroker.PreviewAutomationBroker)({}),
   Layer.mock(ServerBrowser.ServerBrowser)({}),
 );
